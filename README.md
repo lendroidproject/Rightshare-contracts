@@ -1,8 +1,15 @@
-# LeaseERC721
-Protocol to support leasing of ERC721 standard Tokens
+# Rightshare-contracts
+Rightshare Smart Contracts. Refer https://rinkeby-rightshare.lendroid.com
 
 ## Framework
-The smart contracts have been written in [Vyper version 0.1.16](https://vyper.readthedocs.io "Vyper ReadTheDocs") and compiled using using the [Brownie Framework](https://eth-brownie.readthedocs.io "eth-brownie"). Unit and functional test cases have been written using the Pytest framework.
+The architecture comprises 4 main smart contracts:
+
+1. Right.sol
+2. FRight.sol
+3. IRight.sol
+4. RightsDao.vy
+
+The Rights have been written in Solidity v.6.0, while the Dao has been written in [Vyper version 0.1.16](https://vyper.readthedocs.io "Vyper ReadTheDocs").
 
 Please use Git commits according to this article: https://chris.beams.io/posts/git-commit
 
@@ -13,7 +20,7 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
 * cd into the cloned repo
 
-  `cd protocol.2.0`
+  `cd Rightshare-contracts`
 
 * Install dependencies via npm
 
@@ -30,11 +37,11 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
   * Create a virtual environment
 
-    `virtualenv -p python3.7 --no-site-packages ~/vyper-venv`
+    `virtualenv -p python3.7 --no-site-packages ~/venv-rightshare`
 
-  * Activate Vyper's virtual environment
+  * Activate the virtual environment
 
-    `source ~/vyper-venv/bin/activate`
+    `source ~/venv-rightshare/bin/activate`
 
   * Install dependencies from requirements.txt via pip
 
@@ -42,9 +49,9 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
 ## Test and development
 
-* Activate Vyper's virtual environment
+* Activate the virtual environment
 
-  `source ~/vyper-venv/bin/activate`
+  `source ~/venv-rightshare/bin/activate`
 
 
 * Compile using brownie
@@ -69,4 +76,4 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
 _Note_: When the development / testing session ends, deactivate the virtualenv
 
-`(vyper-venv) $ deactivate`
+`(venv-rightshare) $ deactivate`
