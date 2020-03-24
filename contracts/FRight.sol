@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.11;
 
 import "./Right.sol";
 
@@ -71,7 +71,7 @@ contract FRight is Right {
   }
 
 
-  function tokenURI(uint256 _tokenId) external view override returns (string memory) {
+  function tokenURI(uint256 _tokenId) external view returns (string memory) {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     string memory _metadataUri = Strings.strConcat(

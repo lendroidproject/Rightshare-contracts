@@ -1,0 +1,32 @@
+{
+  "name": "rightshare-contracts",
+  "version": "1.0.0",
+  "description": "smart contracts for nft rightshare",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "^2.5.0",
+    "solc": "^0.6.4",
+    "ganache-cli": "istanbul"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lendroidproject/Rightshare-contracts.git"
+  },
+  "keywords": [
+    "rightshare",
+    "nft"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lendroidproject/Rightshare-contracts/issues"
+  },
+  "homepage": "https://github.com/lendroidproject/Rightshare-contracts#readme"
+}

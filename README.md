@@ -24,7 +24,7 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
 * Install dependencies via npm
 
-  `npm install ganache-cli@istanbul -g`
+  `npm install`
 
 
 * Install Python and Vyper v0.1.0-beta.16
@@ -49,30 +49,21 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
 ## Test and development
 
-* Activate the virtual environment
+* Open new terminal, run ganache
+
+  `ganache-cli`
+
+* Open new terminal, activate the virtual environment
 
   `source ~/venv-rightshare/bin/activate`
 
+* Compile using truffle
 
-* Compile using brownie
+  `truffle compile`
 
-  `brownie compile`
+* Run the tests
 
-* Run the tests with coverage
-
-  `brownie test --coverage`
-
-  <i>Note : Version 1.5.1 of brownie requires the following patch:
-  * Within the virtual env, navigate to the brownie package installed in python3 site-packages.
-  * edit `brownie/network/transaction.py` and add a `try, catch` around the line `pc = last["pc_map"][trace[i]["pc"]]` like this
-  ```
-  try:
-      pc = last["pc_map"][trace[i]["pc"]]
-  except KeyError:
-      continue
-  ```
-  </i>
-
+  `truffle test`
 
 _Note_: When the development / testing session ends, deactivate the virtualenv
 

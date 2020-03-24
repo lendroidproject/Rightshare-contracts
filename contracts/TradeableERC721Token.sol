@@ -1,7 +1,7 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.0;
 
-import './ERC721Full.sol';
-import 'http://github.com/OpenZeppelin/openzeppelin-solidity/contracts/access/Ownable.sol';
+import 'openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol';
+import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Strings.sol';
 
 contract OwnableDelegateProxy { }
@@ -53,11 +53,11 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     _currentTokenId++;
   }
 
-  function baseTokenURI() public view virtual returns (string memory) {
+  function baseTokenURI() public view returns (string memory) {
     return "";
   }
 
-  function tokenURI(uint256 _tokenId) external view override virtual returns (string memory) {
+  function tokenURI(uint256 _tokenId) external view returns (string memory) {
     return Strings.strConcat(
         baseTokenURI(),
         Strings.uint2str(_tokenId)
@@ -73,7 +73,6 @@ contract TradeableERC721Token is ERC721Full, Ownable {
   )
     public
     view
-    override
     returns (bool)
   {
     // Whitelist OpenSea proxy contract for easy trading.

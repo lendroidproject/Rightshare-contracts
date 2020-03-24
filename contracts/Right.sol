@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.11;
 
 import "./TradeableERC721Token.sol";
 
@@ -6,11 +6,11 @@ import "./TradeableERC721Token.sol";
  * @title Right
  * Right - a contract for NFT Rights
  */
-abstract contract Right is TradeableERC721Token {
+contract Right is TradeableERC721Token {
 
   string private _apiBaseUrl = "";
 
-  function baseTokenURI() public view override virtual returns (string memory) {
+  function baseTokenURI() public view returns (string memory) {
     return _apiBaseUrl;
   }
 

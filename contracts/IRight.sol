@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.11;
 
 import "./Right.sol";
 
@@ -68,7 +68,7 @@ contract IRight is Right {
     _ok = true;
   }
 
-  function tokenURI(uint256 _tokenId) external view override returns (string memory) {
+  function tokenURI(uint256 _tokenId) external view returns (string memory) {
     Metadata storage _meta = metadata[_tokenId];
     string memory _metadataUri = Strings.strConcat(
         Strings.strConcat(Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
