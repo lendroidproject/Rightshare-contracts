@@ -36,5 +36,7 @@ module.exports = {
   solc: {
     version: "0.5.11"
     }
-  }
+  },
+  plugins: ["solidity-coverage"],
+  skipFiles: ['contracts/RightsDao.vy']
 };
