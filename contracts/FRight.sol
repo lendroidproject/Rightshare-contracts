@@ -26,8 +26,6 @@ contract FRight is Right {
 
   constructor() TradeableERC721Token("FRight Token", "FRT", address(0)) public {}
 
-
-
   /**
     * @dev updates token metadata
     */
@@ -62,14 +60,14 @@ contract FRight is Right {
   function unfreeze(address _from, uint256 _tokenId) public onlyOwner returns (bool _ok) {
     _ok = false;
     Metadata storage _meta = metadata[_tokenId];
-    require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+    require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
+    require((now >= _meta.endTime) || (_meta.circulatingISupply == 0), "FRT: token is not unfreezable");
     delete isFrozen[_meta.baseAssetAddress][_meta.baseAssetId];
     delete metadata[_tokenId];
     _burn(_from, _tokenId);
     _ok = true;
   }
-
 
   function tokenURI(uint256 _tokenId) external view returns (string memory) {
     Metadata storage _meta = metadata[_tokenId];
@@ -90,10 +88,9 @@ contract FRight is Right {
     _ok = false;
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    if (_meta.maxISupply.sub(_meta.circulatingISupply) >= _amount) {
-      _meta.circulatingISupply += _amount;
-      _ok = true;
-    }
+    require(_meta.maxISupply.sub(_meta.circulatingISupply) >= _amount, "Circulating I Supply cannot be incremented");
+    _meta.circulatingISupply += _amount;
+    _ok = true;
   }
 
   function decrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner returns (bool _ok) {
@@ -110,8 +107,8 @@ contract FRight is Right {
 
   function isUnfreezable(uint256 _tokenId) external view returns (bool _unfreezable) {
     Metadata storage _meta = metadata[_tokenId];
-    require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+    require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
     _unfreezable = (now >= _meta.endTime) || (_meta.circulatingISupply == 0);
   }
 
