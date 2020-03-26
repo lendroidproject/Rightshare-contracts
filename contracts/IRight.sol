@@ -48,11 +48,11 @@ contract IRight is Right {
   function issue(address _to, uint256 _parentId, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _serialNumber) public onlyOwner returns (bool _ok) {
     _ok = false;
     if (_isExclusive) {
-        require(_maxISupply == 1);
-        require(_serialNumber == 1);
+        require(_maxISupply == 1, "IRT: Exclusive token should have maximum supply 1");
+        require(_serialNumber == 1, "IRT: Exclusive token should have serial number 1");
     }
     else {
-        require(_serialNumber <= _maxISupply);
+        require(_serialNumber <= _maxISupply, "IRT: Serial number cannot be greater than maximum supply");
     }
     mintTo(_to);
     _updateMetadata(_parentId, now, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber);
@@ -70,6 +70,7 @@ contract IRight is Right {
 
   function tokenURI(uint256 _tokenId) external view returns (string memory) {
     Metadata storage _meta = metadata[_tokenId];
+    require(_meta.tokenId == _tokenId, "IRT: token does not exist");
     string memory _metadataUri = Strings.strConcat(
         Strings.strConcat(Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
         Strings.strConcat("i/", Strings.uint2str(_meta.endTime), "/"),
@@ -84,7 +85,7 @@ contract IRight is Right {
 
   function parentId(uint256 _tokenId) external view returns (uint256 _parentId) {
     Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+    require(_meta.tokenId == _tokenId, "IRT: token does not exist");
     _parentId = _meta.parentId;
   }
 
