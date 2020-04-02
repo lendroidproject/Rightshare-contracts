@@ -62,15 +62,6 @@ contract("RightsDao", (accounts) => {
     it('allows owner to set i right', async () => {
       // Confirm f right contract address has not been set to 0x0
       assert.equal(await dao.contracts(2), 0x0, "i right contract address is not 0x0.")
-      // call with invalid contract type will revert
-      await expectRevert(
-        dao.set_right(0, iRight.address, {from: owner}),
-        'invalid contract type',
-      )
-      await expectRevert(
-        dao.set_right(3, iRight.address, {from: owner}),
-        'invalid contract type',
-      )
       // Set i right contract address
       await dao.set_right(2, iRight.address, {from: owner})
       // Confirm i right contract address
@@ -90,6 +81,71 @@ contract("RightsDao", (accounts) => {
         dao.set_right(2, 0x0, {from: owner}),
         'invalid address',
       )
+    })
+
+    describe('transfer_right_ownership', () => {
+
+      before(async () => {
+        // transfer fright ownership to dao
+        await fRight.transferOwnership(dao.address);
+        // transfer iright ownership to dao
+        await iRight.transferOwnership(dao.address);
+      })
+
+      it('allows owner to transfer ownership of f right', async () => {
+        // check owner is dao
+        assert.equal(dao.address, await fRight.owner(), "owner is not dao")
+        // call with invalid contract type will revert
+        await expectRevert(
+          dao.transfer_right_ownership(0, accounts[0]),
+          'invalid contract type',
+        )
+        await expectRevert(
+          dao.transfer_right_ownership(3, accounts[0]),
+          'invalid contract type',
+        )
+        // transfer f right ownership to accounts[0]
+        await dao.transfer_right_ownership(1, accounts[0]);
+        // check owner is accounts[0]
+        assert.equal(accounts[0], await fRight.owner(), "owner is not accounts[0]")
+        // transfer fright ownership to dao
+        await fRight.transferOwnership(dao.address);
+        // check owner is dao
+        assert.equal(dao.address, await fRight.owner(), "owner is not dao")
+        // call by non owner will revert
+        await expectRevert(
+          dao.transfer_right_ownership(1, accounts[0], {from: accounts[1]}),
+          'invalid sender',
+        )
+        // call with 0x0 as _to address will revert
+        await expectRevert(
+          dao.transfer_right_ownership(1, 0x0, {from: owner}),
+          'invalid address',
+        )
+      })
+
+      it('allows owner to transfer ownership of i right', async () => {
+        // check owner is dao
+        assert.equal(dao.address, await iRight.owner(), "owner is not dao")
+        // transfer i right ownership to accounts[0]
+        await dao.transfer_right_ownership(2, accounts[0]);
+        // check owner is accounts[0]
+        assert.equal(accounts[0], await iRight.owner(), "owner is not accounts[0]")
+        // transfer iright ownership to dao
+        await iRight.transferOwnership(dao.address);
+        // check owner is dao
+        assert.equal(dao.address, await iRight.owner(), "owner is not dao")
+        // call by non owner will revert
+        await expectRevert(
+          dao.transfer_right_ownership(2, accounts[0], {from: accounts[1]}),
+          'invalid sender',
+        )
+        // call with 0x0 as _to address will revert
+        await expectRevert(
+          dao.transfer_right_ownership(2, 0x0, {from: owner}),
+          'invalid address',
+        )
+      })
     })
   })
 });
