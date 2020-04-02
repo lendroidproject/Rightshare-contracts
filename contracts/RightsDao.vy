@@ -47,27 +47,27 @@ def __init__():
 
 @public
 def set_right(_type: int128, _address: address) -> bool:
-  assert msg.sender == self.owner
-  assert _type in [CONTRACT_TYPE_RIGHT_F, CONTRACT_TYPE_RIGHT_I]
-  assert _address.is_contract
+  assert msg.sender == self.owner, "invalid sender"
+  assert _type in [CONTRACT_TYPE_RIGHT_F, CONTRACT_TYPE_RIGHT_I], "invalid contract type"
+  assert _address.is_contract, "invalid contract address"
   self.contracts[_type] = _address
   return True
 
 
 @public
 def transfer_right_ownership(_type: int128, _to: address) -> bool:
-  assert msg.sender == self.owner
-  assert _type in [CONTRACT_TYPE_RIGHT_F, CONTRACT_TYPE_RIGHT_I]
-  assert self.contracts[_type].is_contract
+  assert msg.sender == self.owner, "invalid sender"
+  assert _type in [CONTRACT_TYPE_RIGHT_F, CONTRACT_TYPE_RIGHT_I], "invalid contract type"
+  assert self.contracts[_type].is_contract, "invalid contract address"
   Right(self.contracts[_type]).transferOwnership(_to)
   return True
 
 
 @public
 def set_right_proxy_registry(_type: int128, _proxy_registry: address) -> bool:
-  assert msg.sender == self.owner
-  assert _type in [CONTRACT_TYPE_RIGHT_F, CONTRACT_TYPE_RIGHT_I]
-  assert self.contracts[_type].is_contract
+  assert msg.sender == self.owner, "invalid sender"
+  assert _type in [CONTRACT_TYPE_RIGHT_F, CONTRACT_TYPE_RIGHT_I], "invalid contract type"
+  assert self.contracts[_type].is_contract, "invalid contract address"
   # set _proxyRegistryAddress
   _external_call_successful: bool = Right(self.contracts[_type]).setProxyRegistryAddress(_proxy_registry)
   assert _external_call_successful
