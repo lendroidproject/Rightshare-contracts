@@ -180,4 +180,46 @@ contract("RightsDao", (accounts) => {
       )
     })
   })
+
+  describe('freeze : exclusive rights', () => {
+    let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+
+    before(async () => {
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1585699199
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 1
+      _isExclusive = true
+      _maxISupply = 1
+      // approves
+      await nft.approve(dao.address, 1, {from: owner})
+    })
+
+    it('fails for incorrect _maxISupply', async () => {
+      // call by non owner will revert
+      await expectRevert(
+        dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, 2, {from: owner}),
+        'revert',
+      )
+    })
+
+    it('fails for incorrect _baseAssetId', async () => {
+      // call by non owner will revert
+      await expectRevert(
+        dao.freeze(_baseAssetAddress, 2, _endTime, _isExclusive, _maxISupply, {from: owner}),
+        'revert',
+      )
+    })
+
+    it('succeeds', async () => {
+      // Call freeze
+      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      // call freeze again will revert
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner}),
+        'revert',
+      )
+    })
+  })
 });
