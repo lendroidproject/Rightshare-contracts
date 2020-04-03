@@ -47,7 +47,7 @@ contract("IRight", (accounts) => {
       await nft.mintTo(owner);
       _to = accounts[1]
       _parentId = 1
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 1
       _isExclusive = true
@@ -91,7 +91,7 @@ contract("IRight", (accounts) => {
       await nft.mintTo(owner);
       _to = accounts[1]
       _parentId = 2
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 2
       _isExclusive = true
@@ -104,7 +104,7 @@ contract("IRight", (accounts) => {
     it('updates the tokenURI', async () => {
       const tokenURI = await iRight.tokenURI(2)
       // Confirm IRight tokenURI is correct
-      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/2/i/1585699199/1/1/1`, "tokenURI is incorrect.")
+      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/2/i/1609459200/1/1/1`, "tokenURI is incorrect.")
     })
   })
 
@@ -116,7 +116,7 @@ contract("IRight", (accounts) => {
       await nft.mintTo(owner);
       _to = accounts[1]
       _parentId = 3
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 3
       _isExclusive = false
@@ -129,7 +129,7 @@ contract("IRight", (accounts) => {
     it('updates the tokenURI', async () => {
       const tokenURI = await iRight.tokenURI(3)
       // Confirm IRight tokenURI is correct
-      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/3/i/1585699199/0/3/2`, "tokenURI is incorrect.")
+      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/3/i/1609459200/0/3/2`, "tokenURI is incorrect.")
     })
   })
 
@@ -141,7 +141,7 @@ contract("IRight", (accounts) => {
       await nft.mintTo(owner);
       _to = accounts[1]
       _parentId = 4
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 4
     })
@@ -179,7 +179,7 @@ contract("IRight", (accounts) => {
       await nft.mintTo(owner);
       _to = accounts[1]
       _parentId = 4
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 4
       _isExclusive = true
@@ -217,7 +217,7 @@ contract("IRight", (accounts) => {
       await nft.mintTo(owner);
       _to = accounts[1]
       _parentId = 5
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 5
       _isExclusive = true

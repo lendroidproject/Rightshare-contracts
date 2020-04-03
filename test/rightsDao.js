@@ -187,7 +187,7 @@ contract("RightsDao", (accounts) => {
     before(async () => {
       // Mint NFT to owner
       await nft.mintTo(owner);
-      _endTime = 1585699199
+      _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 1
       _isExclusive = true

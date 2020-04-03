@@ -7,5 +7,5 @@ module.exports = function(deployer, accounts) {
   deployer.deploy(FRight);
   deployer.deploy(IRight);
   deployer.deploy(RightsDao);
-  deployer.deploy(NFT, "Test Non Fungible Token", "TNFT", "0x944aa1C909BDDEC81F8346165Cc205F24aceE4FD");
+  deployer.deploy(NFT, "Test Non Fungible Token", "TNFT", "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7");
 };
