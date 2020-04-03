@@ -12,7 +12,7 @@
     "ganache-cli": "istanbul"
   },
   "devDependencies": {
-    "solidity-coverage": "^0.7.2",
+    "solidity-coverage": "latest",
     "@openzeppelin/test-helpers": "^0.5.4"
   },
   "scripts": {
@@ -24,7 +24,8 @@
   },
   "keywords": [
     "rightshare",
-    "nft"
+    "nft",
+    "leasing"
   ],
   "author": "",
   "license": "ISC",
