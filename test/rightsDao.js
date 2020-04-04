@@ -222,4 +222,64 @@ contract("RightsDao", (accounts) => {
       )
     })
   })
+
+  describe('issue_i', () => {
+    let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+
+    it('works for non exclusive', async () => {
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 2
+      _isExclusive = false
+      _maxISupply = 3
+      _f_right_id = 2
+      _expiry = 1609459190
+      // approves
+      await nft.approve(dao.address, 2, {from: owner})
+      // Call freeze
+      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      // Call issue_i
+      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      // call by non owner will fail
+      await expectRevert(
+        dao.issue_i( _f_right_id, _expiry, {from: accounts[2]}),
+        'revert',
+      )
+      // call with expiry > endtime will fail
+      await expectRevert(
+        dao.issue_i( _f_right_id, _endTime + 1, {from: accounts[2]}),
+        'revert',
+      )
+      // Call issue_i again will work
+      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      // call issue_i again will fail
+      await expectRevert(
+        dao.issue_i( _f_right_id, _expiry, {from: owner}),
+        'revert',
+      )
+    })
+
+    it('fails for exclusive', async () => {
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 3
+      _isExclusive = true
+      _maxISupply = 1
+      _f_right_id = 3
+      _expiry = 1609459190
+      // approves
+      await nft.approve(dao.address, 3, {from: owner})
+      // Call freeze
+      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      // call issue_i will fail
+      await expectRevert(
+        dao.issue_i( _f_right_id, _expiry, {from: owner}),
+        'revert',
+      )
+    })
+  })
 });
