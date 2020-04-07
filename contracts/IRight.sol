@@ -9,6 +9,7 @@ import "./Right.sol";
 contract IRight is Right {
 
   struct Metadata {
+    uint256 version;
     uint256 parentId;
     uint256 tokenId;
     uint256 startTime;
@@ -28,9 +29,10 @@ contract IRight is Right {
   /**
     * @dev updates token metadata
     */
-  function _updateMetadata(uint256 _parentId, uint256 _startTime, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _serialNumber) private  {
+  function _updateMetadata(uint256 _version, uint256 _parentId, uint256 _startTime, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _serialNumber) private  {
     Metadata storage _meta = metadata[currentTokenId()];
     _meta.tokenId = currentTokenId();
+    _meta.version = _version;
     _meta.parentId = _parentId;
     _meta.startTime = _startTime;
     _meta.endTime = _endTime;
@@ -42,20 +44,22 @@ contract IRight is Right {
   }
 
   /**
-    * @dev Add details to Token metadata after mint.
-    * @param _to address of the future owner of the token
+    * @dev Mint IRight Token and update mateadata
+    * @param addresses : address array [_to, _baseAssetAddress]
+    * @param values : uint256 array [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, _version]
+    * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function issue(address _to, uint256 _parentId, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _serialNumber) public onlyOwner returns (bool _ok) {
+  function issue(address[2] memory addresses, bool isExclusive, uint256[6] memory values) public onlyOwner returns (bool _ok) {
     _ok = false;
-    if (_isExclusive) {
-        require(_maxISupply == 1, "IRT: Exclusive token should have maximum supply 1");
-        require(_serialNumber == 1, "IRT: Exclusive token should have serial number 1");
+    if (isExclusive) {
+        require(values[3] == 1, "IRT: Exclusive token should have maximum supply 1");
+        require(values[4] == 1, "IRT: Exclusive token should have serial number 1");
     }
     else {
-        require(_serialNumber <= _maxISupply, "IRT: Serial number cannot be greater than maximum supply");
+        require(values[4] <= values[3], "IRT: Serial number cannot be greater than maximum supply");
     }
-    mintTo(_to);
-    _updateMetadata(_parentId, now, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber);
+    mintTo(addresses[0]);
+    _updateMetadata(values[5], values[0], now, values[1], addresses[1], values[2], isExclusive, values[3], values[4]);
     _ok = true;
   }
 
@@ -75,7 +79,8 @@ contract IRight is Right {
         Strings.strConcat(Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
         Strings.strConcat("i/", Strings.uint2str(_meta.endTime), "/"),
         Strings.strConcat(Strings.bool2str(_meta.isExclusive), "/", Strings.uint2str(_meta.maxISupply), "/"),
-        Strings.uint2str(_meta.serialNumber)
+        Strings.strConcat(Strings.uint2str(_meta.serialNumber) , "/"),
+        Strings.uint2str(_meta.version)
     );
     return Strings.strConcat(
         baseTokenURI(),

@@ -9,6 +9,7 @@ import "./Right.sol";
 contract FRight is Right {
 
   struct Metadata {
+    uint256 version;
     uint256 tokenId;
     uint256 startTime;
     uint256 endTime;
@@ -29,9 +30,10 @@ contract FRight is Right {
   /**
     * @dev updates token metadata
     */
-  function _updateMetadata(uint256 _startTime, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _circulatingISupply) private  {
+  function _updateMetadata(uint256 _version, uint256 _startTime, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _circulatingISupply) private  {
     Metadata storage _meta = metadata[currentTokenId()];
     _meta.tokenId = currentTokenId();
+    _meta.version = _version;
     _meta.startTime = _startTime;
     _meta.endTime = _endTime;
     _meta.baseAssetAddress = _baseAssetAddress;
@@ -42,18 +44,20 @@ contract FRight is Right {
   }
 
   /**
-    * @dev Add details to Token metadata after mint.
-    * @param _to address of the future owner of the token
+    * @dev Mint FRight Token and update mateadata
+    * @param addresses : address array [_to, _baseAssetAddress]
+    * @param values : uint256 array [_endTime, _baseAssetId, _maxISupply, _version]
+    * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function freeze(address _to, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply) public onlyOwner returns (uint256 _rightId) {
+  function freeze(address[2] memory addresses, bool isExclusive, uint256[4] memory values) public onlyOwner returns (uint256 _rightId) {
     _rightId = 0;
-    require(!isFrozen[_baseAssetAddress][_baseAssetId], "Asset is already frozen");
-    isFrozen[_baseAssetAddress][_baseAssetId] = true;
-    if (_isExclusive) {
-        require(_maxISupply == 1);
+    require(!isFrozen[addresses[1]][values[1]], "Asset is already frozen");
+    isFrozen[addresses[1]][values[1]] = true;
+    if (isExclusive) {
+        require(values[2] == 1);
     }
-    mintTo(_to);
-    _updateMetadata(now, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, 1);
+    mintTo(addresses[0]);
+    _updateMetadata(values[2], now, values[0], addresses[1], values[1], isExclusive, values[2], 1);
     _rightId = currentTokenId();
   }
 
@@ -76,7 +80,8 @@ contract FRight is Right {
         Strings.strConcat(Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
         Strings.strConcat("f/", Strings.uint2str(_meta.endTime), "/"),
         Strings.strConcat(Strings.bool2str(_meta.isExclusive), "/", Strings.uint2str(_meta.maxISupply), "/"),
-        Strings.uint2str(_meta.circulatingISupply)
+        Strings.strConcat(Strings.uint2str(_meta.circulatingISupply) , "/"),
+        Strings.uint2str(_meta.version)
     );
     return Strings.strConcat(
         baseTokenURI(),

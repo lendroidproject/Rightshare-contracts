@@ -18,8 +18,86 @@ contract RightsDao is Ownable, IERC721Receiver {
 
   mapping(int128 => address) public contracts;
 
+  mapping(address => bool) public whitelist;
+
+  bool public whitelisted_freeze_activated = true;
+
+  uint256 public current_f_version = 1;
+  uint256 public current_i_version = 1;
+
+
   function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
       return this.onERC721Received.selector;
+  }
+
+
+  /**
+    * @dev set whitelisted_freeze_activated value as true or false
+    * @param activate toggle value
+    */
+  function _toggle_whitelisted_freeze(bool activate) internal {
+    if (activate) {
+      require(!whitelisted_freeze_activated);
+    }
+    else {
+      require(whitelisted_freeze_activated);
+    }
+    whitelisted_freeze_activated = activate;
+  }
+
+
+  /**
+    * @dev set whitelisted_freeze_activated value as true
+    */
+  function activate_whitelisted_freeze() external onlyOwner returns (bool ok) {
+    ok = false;
+    _toggle_whitelisted_freeze(true);
+    ok = true;
+  }
+
+
+  /**
+    * @dev set whitelisted_freeze_activated value as false
+    */
+  function deactivate_whitelisted_freeze() external onlyOwner returns (bool ok) {
+    ok = false;
+    _toggle_whitelisted_freeze(false);
+    ok = true;
+  }
+
+
+  /**
+    * @dev add / remove given address to / from whitelist
+    * @param addr given address
+    * @param status whitelist status of given address
+    */
+  function toggle_whitelist_status(address addr, bool status) external onlyOwner returns (bool ok) {
+    ok = false;
+    whitelist[addr] = status;
+    ok = true;
+  }
+
+
+  /**
+    * @dev Set current f version
+    * @param version number
+    */
+  function set_current_f_version(uint256 version) external onlyOwner returns (bool ok) {
+    ok = false;
+    require(version > 0);
+    current_f_version = version;
+    ok = true;
+  }
+
+  /**
+    * @dev Set current i version
+    * @param version number
+    */
+  function set_current_i_version(uint256 version) external onlyOwner returns (bool ok) {
+    ok = false;
+    require(version > 0);
+    current_i_version = version;
+    ok = true;
   }
 
   /**
@@ -75,39 +153,41 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param baseAssetId id of the ERC721 Token
     * @param expiry timestamp until which the ERC721 Token is locked in the dao
     * @param isExclusive exclusivity of IRights for the ERC721 Token
-    * @param maxISupply maximum supply of IRights for the ERC721 Token
+    * @param values uint256 array [maxISupply, f_version, i_version]
     */
-  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256 maxISupply) external returns (bool ok) {
+  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool ok) {
     ok = false;
-    uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze(msg.sender, expiry, baseAssetAddress, baseAssetId, isExclusive, maxISupply);
+    require((values[1] > 0) && (values[1] <= current_f_version), "invalid f version");
+    require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
+    uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
     require(fRightId != 0, "freeze unsuccessful");
-    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue(msg.sender, fRightId, expiry, baseAssetAddress, baseAssetId, isExclusive, maxISupply, 1);
+    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[0], 1, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
     ok = true;
   }
 
   /**
     * @dev Mint an IRight token for a given FRight token Id
-    * @param fRightId id of the FRight Token
-    * @param expiry indicates timestamp until which the newly minted IRight is usable
+    * @param values uint256 array [fRightId, expiry, i_version]
     */
-  function issue_i(uint256 fRightId, uint256 expiry) external returns (bool ok) {
+  function issue_i(uint256[3] calldata values) external returns (bool ok) {
     ok = false;
-    bool isIMintAble = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(fRightId);
+    require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
+    bool isIMintAble = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]);
     require(isIMintAble);
-    address fRightOwner = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(fRightId);
+    address fRightOwner = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]);
     require(fRightOwner == msg.sender);
     bool exclusivity = false;
-    (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(fRightId);
-    (uint256 fEndTime, uint256 fMaxISupply, uint256 circulatingISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndISupplies(fRightId);
-    require(expiry <= fEndTime);
+    (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(values[0]);
+    (uint256 fEndTime, uint256 fMaxISupply, uint256 circulatingISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndISupplies(values[0]);
+    require(values[1] <= fEndTime);
     if (fMaxISupply == 1) {
       require(circulatingISupply == 0);
       exclusivity = true;
     }
     circulatingISupply += 1;
-    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue(msg.sender, fRightId, expiry, baseAssetAddress, baseAssetId, exclusivity, fMaxISupply, circulatingISupply);
-    FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(fRightId, 1);
+    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], exclusivity, [values[0], values[1], baseAssetId, fMaxISupply, circulatingISupply, values[2]]);
+    FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(values[0], 1);
     ok = true;
   }
 
