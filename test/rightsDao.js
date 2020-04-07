@@ -330,4 +330,49 @@ contract("RightsDao", (accounts) => {
       )
     })
   })
+
+  describe('unfreeze', () => {
+    let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, currentTokenId
+
+    it('succeeds when all i tokens are revoked', async () => {
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 5
+      _isExclusive = false
+      _maxISupply = 3
+      _f_right_id = 5
+      _expiry = 1609459190
+      // approves
+      await nft.approve(dao.address, 5, {from: owner})
+      // Call freeze
+      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      // call unfreeze will fail
+      await expectRevert(
+        dao.unfreeze( _f_right_id, {from: owner}),
+        'revert',
+      )
+      // Call issue_i
+      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      currentTokenId = await iRight.currentTokenId()
+      assert.equal(10, currentTokenId.toString(), 'is wrong id value')
+      // Call revoke_i
+      await dao.revoke_i(10, {from: owner})
+      // Call issue_i
+      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      assert.equal(11, await iRight.currentTokenId(), 'is wrong id value')
+      // Call revoke_i
+      await dao.revoke_i(11, {from: owner})
+      // Call revoke_i
+      await dao.revoke_i(9, {from: owner})
+      // call unfreeze will succeed
+      await dao.unfreeze( _f_right_id, {from: owner})
+      // call unfreeze will fail
+      await expectRevert(
+        dao.unfreeze( _f_right_id, {from: owner}),
+        'revert',
+      )
+    })
+  })
 });
