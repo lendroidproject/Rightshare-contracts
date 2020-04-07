@@ -282,4 +282,52 @@ contract("RightsDao", (accounts) => {
       )
     })
   })
+
+  describe('revoke_i', () => {
+    let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+
+    it('succeeds for non exclusive', async () => {
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 4
+      _isExclusive = false
+      _maxISupply = 3
+      _f_right_id = 4
+      _expiry = 1609459190
+      // approves
+      await nft.approve(dao.address, 4, {from: owner})
+      // Call freeze
+      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      // Call issue_i
+      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      assert.equal(7, await iRight.currentTokenId(), 'is wrong id value')
+      // call revoke_i will fail with non owner
+      await expectRevert(
+        dao.revoke_i(7, {from: accounts[1]}),
+        'revert',
+      )
+      // Call revoke_i
+      await dao.revoke_i(7, {from: owner})
+      // Call issue_i
+      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      assert.equal(8, await iRight.currentTokenId(), 'is wrong id value')
+      // Call revoke_i
+      await dao.revoke_i(8, {from: owner})
+      // 1-1
+      // call issue_i will fail
+      await expectRevert(
+        dao.issue_i( _f_right_id, _expiry, {from: owner}),
+        'revert',
+      )
+      // Call revoke_i
+      await dao.revoke_i(6, {from: owner})
+      // call revoke_i will fail
+      await expectRevert(
+        dao.revoke_i(8, {from: owner}),
+        'revert',
+      )
+    })
+  })
 });
