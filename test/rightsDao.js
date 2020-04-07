@@ -45,7 +45,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.set_right(1, nft.address, {from: accounts[1]}),
-        'invalid sender',
+        'caller is not the owner',
       )
       // call with invalid contract address will revert
       await expectRevert(
@@ -69,7 +69,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.set_right(2, nft.address, {from: accounts[1]}),
-        'invalid sender',
+        'caller is not the owner',
       )
       // call with invalid contract address will revert
       await expectRevert(
@@ -116,7 +116,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.transfer_right_ownership(1, accounts[0], {from: accounts[1]}),
-        'invalid sender',
+        'caller is not the owner',
       )
       // call with 0x0 as _to address will revert
       await expectRevert(
@@ -139,7 +139,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.transfer_right_ownership(2, accounts[0], {from: accounts[1]}),
-        'invalid sender',
+        'caller is not the owner',
       )
       // call with 0x0 as _to address will revert
       await expectRevert(
@@ -166,7 +166,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.set_right_proxy_registry(1, accounts[1], {from: accounts[1]}),
-        'invalid sender',
+        'caller is not the owner',
       )
     })
 
@@ -176,7 +176,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.set_right_proxy_registry(2, accounts[1], {from: accounts[1]}),
-        'invalid sender',
+        'caller is not the owner',
       )
     })
   })
@@ -199,7 +199,7 @@ contract("RightsDao", (accounts) => {
     it('fails for incorrect _maxISupply', async () => {
       // call by non owner will revert
       await expectRevert(
-        dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, 2, {from: owner}),
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [2, 1, 1], {from: owner}),
         'revert',
       )
     })
@@ -207,17 +207,17 @@ contract("RightsDao", (accounts) => {
     it('fails for incorrect _baseAssetId', async () => {
       // call by non owner will revert
       await expectRevert(
-        dao.freeze(_baseAssetAddress, 2, _endTime, _isExclusive, _maxISupply, {from: owner}),
+        dao.freeze( _baseAssetAddress, 2, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
         'revert',
       )
     })
 
     it('succeeds', async () => {
       // Call freeze
-      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
       // call freeze again will revert
       await expectRevert(
-        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner}),
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
         'revert',
       )
     })
@@ -239,24 +239,24 @@ contract("RightsDao", (accounts) => {
       // approves
       await nft.approve(dao.address, 2, {from: owner})
       // Call freeze
-      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
       // Call issue_i
-      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
       // call by non owner will fail
       await expectRevert(
-        dao.issue_i( _f_right_id, _expiry, {from: accounts[2]}),
+        dao.issue_i([_f_right_id, _expiry, 1], {from: accounts[2]}),
         'revert',
       )
       // call with expiry > endtime will fail
       await expectRevert(
-        dao.issue_i( _f_right_id, _endTime + 1, {from: accounts[2]}),
+        dao.issue_i([_f_right_id, _endTime+1, 1], {from: accounts[2]}),
         'revert',
       )
       // Call issue_i again will work
-      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
       // call issue_i again will fail
       await expectRevert(
-        dao.issue_i( _f_right_id, _expiry, {from: owner}),
+        dao.issue_i([_f_right_id, _expiry, 1], {from: owner}),
         'revert',
       )
     })
@@ -274,10 +274,10 @@ contract("RightsDao", (accounts) => {
       // approves
       await nft.approve(dao.address, 3, {from: owner})
       // Call freeze
-      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
       // call issue_i will fail
       await expectRevert(
-        dao.issue_i( _f_right_id, _expiry, {from: owner}),
+        dao.issue_i([_f_right_id, _expiry, 1], {from: owner}),
         'revert',
       )
     })
@@ -299,9 +299,9 @@ contract("RightsDao", (accounts) => {
       // approves
       await nft.approve(dao.address, 4, {from: owner})
       // Call freeze
-      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
       // Call issue_i
-      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
       assert.equal(7, await iRight.currentTokenId(), 'is wrong id value')
       // call revoke_i will fail with non owner
       await expectRevert(
@@ -311,14 +311,14 @@ contract("RightsDao", (accounts) => {
       // Call revoke_i
       await dao.revoke_i(7, {from: owner})
       // Call issue_i
-      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
       assert.equal(8, await iRight.currentTokenId(), 'is wrong id value')
       // Call revoke_i
       await dao.revoke_i(8, {from: owner})
       // 1-1
       // call issue_i will fail
       await expectRevert(
-        dao.issue_i( _f_right_id, _expiry, {from: owner}),
+        dao.issue_i([_f_right_id, _expiry, 1], {from: owner}),
         'revert',
       )
       // Call revoke_i
@@ -347,30 +347,30 @@ contract("RightsDao", (accounts) => {
       // approves
       await nft.approve(dao.address, 5, {from: owner})
       // Call freeze
-      await dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, _maxISupply, {from: owner})
+      await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
       // call unfreeze will fail
       await expectRevert(
-        dao.unfreeze( _f_right_id, {from: owner}),
+        dao.unfreeze(_f_right_id, {from: owner}),
         'revert',
       )
       // Call issue_i
-      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
       currentTokenId = await iRight.currentTokenId()
       assert.equal(10, currentTokenId.toString(), 'is wrong id value')
       // Call revoke_i
       await dao.revoke_i(10, {from: owner})
       // Call issue_i
-      await dao.issue_i( _f_right_id, _expiry, {from: owner})
+      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
       assert.equal(11, await iRight.currentTokenId(), 'is wrong id value')
       // Call revoke_i
       await dao.revoke_i(11, {from: owner})
       // Call revoke_i
       await dao.revoke_i(9, {from: owner})
       // call unfreeze will succeed
-      await dao.unfreeze( _f_right_id, {from: owner})
+      await dao.unfreeze(_f_right_id, {from: owner})
       // call unfreeze will fail
       await expectRevert(
-        dao.unfreeze( _f_right_id, {from: owner}),
+        dao.unfreeze(_f_right_id, {from: owner}),
         'revert',
       )
     })
