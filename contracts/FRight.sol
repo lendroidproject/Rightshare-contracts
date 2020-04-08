@@ -57,7 +57,7 @@ contract FRight is Right {
         require(values[2] == 1);
     }
     mintTo(addresses[0]);
-    _updateMetadata(values[2], now, values[0], addresses[1], values[1], isExclusive, values[2], 1);
+    _updateMetadata(values[3], now, values[0], addresses[1], values[1], isExclusive, values[2], 1);
     _rightId = currentTokenId();
   }
 

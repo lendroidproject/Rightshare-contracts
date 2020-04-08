@@ -168,11 +168,11 @@ contract("FRight", (accounts) => {
       await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
-    // it('updates the tokenURI', async () => {
-    //   const tokenURI = await fRight.tokenURI(3)
-    //   // Confirm FRight tokenURI is correct
-    //   assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/3/f/1609459200/0/3/1/1`, "tokenURI is incorrect.")
-    // })
+    it('updates the tokenURI', async () => {
+      const tokenURI = await fRight.tokenURI(3)
+      // Confirm FRight tokenURI is correct
+      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/3/f/1609459200/0/3/1/1`, "tokenURI is incorrect.")
+    })
 
     it('IMintAble is true', async () => {
       // Confirm FRight is not IMintAble
