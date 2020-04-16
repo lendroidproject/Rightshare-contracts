@@ -123,66 +123,6 @@ contract("RightsDao", (accounts) => {
     })
   })
 
-
-  describe('set_right', () => {
-    it('allows owner to set f right', async () => {
-      // Confirm f right contract address has not been set to 0x0
-      assert.equal(await dao.contracts(1), 0x0, "f right contract address is not 0x0.")
-      // call with invalid contract type will revert
-      await expectRevert(
-        dao.set_right(0, fRight.address, {from: owner}),
-        'invalid contract type',
-      )
-      await expectRevert(
-        dao.set_right(3, fRight.address, {from: owner}),
-        'invalid contract type',
-      )
-      // Set f right contract address
-      await dao.set_right(1, fRight.address, {from: owner})
-      // Confirm f right contract address
-      assert.equal(await dao.contracts(1), fRight.address, "f right address has not been set correctly.")
-      // call by non owner will revert
-      await expectRevert(
-        dao.set_right(1, nft.address, {from: accounts[1]}),
-        'caller is not the owner',
-      )
-      // call with invalid contract address will revert
-      await expectRevert(
-        dao.set_right(1, owner, {from: owner}),
-        'invalid contract address',
-      )
-      // call with 0x0 as contract address will revert
-      await expectRevert(
-        dao.set_right(1, 0x0, {from: owner}),
-        'invalid address',
-      )
-    })
-
-    it('allows owner to set i right', async () => {
-      // Confirm f right contract address has not been set to 0x0
-      assert.equal(await dao.contracts(2), 0x0, "i right contract address is not 0x0.")
-      // Set i right contract address
-      await dao.set_right(2, iRight.address, {from: owner})
-      // Confirm i right contract address
-      assert.equal(await dao.contracts(2), iRight.address, "i right address has not been set correctly.")
-      // call by non owner will revert
-      await expectRevert(
-        dao.set_right(2, nft.address, {from: accounts[1]}),
-        'caller is not the owner',
-      )
-      // call with invalid contract address will revert
-      await expectRevert(
-        dao.set_right(2, owner, {from: owner}),
-        'invalid contract address',
-      )
-      // call with 0x0 as contract address will revert
-      await expectRevert(
-        dao.set_right(2, 0x0, {from: owner}),
-        'invalid address',
-      )
-    })
-  })
-
   describe('set_right_api_base_url', () => {
 
     before(async () => {

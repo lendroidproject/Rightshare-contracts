@@ -27,6 +27,13 @@ contract RightsDao is Ownable, IERC721Receiver {
   uint256 public current_f_version = 1;
   uint256 public current_i_version = 1;
 
+  constructor(address fRightContractAddress, address iRightContractAddress) public {
+    require(fRightContractAddress.isContract(), "invalid fRightContractAddress");
+    require(iRightContractAddress.isContract(), "invalid iRightContractAddress");
+    contracts[CONTRACT_TYPE_RIGHT_F] = fRightContractAddress;
+    contracts[CONTRACT_TYPE_RIGHT_I] = iRightContractAddress;
+  }
+
 
   function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
       return this.onERC721Received.selector;
@@ -98,18 +105,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     ok = true;
   }
 
-  /**
-    * @dev Set address of the Right.
-    * @param rightType type of Right contract
-    * @param rightAddress address of Right contract
-    */
-  function set_right(int128 rightType, address rightAddress) external onlyOwner returns (bool ok) {
-    ok = false;
-    require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
-    require(rightAddress.isContract(), "invalid contract address");
-    contracts[rightType] = rightAddress;
-    ok = true;
-  }
 
   /**
     * @dev Set base url of the server API representing the metadata of a RIght Token
