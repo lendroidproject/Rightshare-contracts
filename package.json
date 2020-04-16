@@ -7,14 +7,14 @@
     "test": "test"
   },
   "dependencies": {
-    "truffle": "latest",
-    "openzeppelin-solidity": "^2.5.0",
-    "solc": "^0.6.4",
-    "ganache-cli": "istanbul"
+    "truffle": "5.1.21",
+    "openzeppelin-solidity": "2.5.0",
+    "solc": "0.6.4",
+    "ganache-cli": "6.9.1"
   },
   "devDependencies": {
-    "solidity-coverage": "latest",
-    "@openzeppelin/test-helpers": "latest"
+    "solidity-coverage": "0.7.2",
+    "@openzeppelin/test-helpers": "0.5.5"
   },
   "scripts": {
     "test": "truffle test"
