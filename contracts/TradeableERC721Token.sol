@@ -31,6 +31,7 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     * @param _to address of the future owner of the token
     */
   function mintTo(address _to) public onlyOwner {
+    require(_to != address(0));
     uint256 newTokenId = _getNextTokenId();
     _mint(_to, newTokenId);
     _incrementTokenId();
@@ -77,6 +78,8 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     view
     returns (bool)
   {
+    require(owner != address(0));
+    require(operator != address(0));
     if (proxyRegistryAddress == address(0)) {
       return super.isApprovedForAll(owner, operator);
     }

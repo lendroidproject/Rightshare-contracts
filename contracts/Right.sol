@@ -19,6 +19,7 @@ contract Right is TradeableERC721Token {
   }
 
   function setProxyRegistryAddress(address _proxyRegistryAddress) public onlyOwner {
+    require(_proxyRegistryAddress != address(0), "invalid proxy registry address");
     proxyRegistryAddress = _proxyRegistryAddress;
   }
 

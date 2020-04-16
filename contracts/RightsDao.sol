@@ -82,6 +82,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     */
   function toggle_whitelist_status(address addr, bool status) external onlyOwner returns (bool ok) {
     ok = false;
+    require(addr != address(0));
     is_whitelisted[addr] = status;
     ok = true;
   }
@@ -131,6 +132,7 @@ contract RightsDao is Ownable, IERC721Receiver {
   function set_right_proxy_registry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool ok) {
     ok = false;
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
+    require(proxyRegistryAddress != address(0));
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
     }
@@ -153,6 +155,8 @@ contract RightsDao is Ownable, IERC721Receiver {
     if (whitelisted_freeze_activated) {
       require(is_whitelisted[msg.sender]);
     }
+    require(values[0] > 0, "invalid maximum I supply");
+    require(expiry > block.timestamp, "expiry cannot be in the past");
     require((values[1] > 0) && (values[1] <= current_f_version), "invalid f version");
     require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
     uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
