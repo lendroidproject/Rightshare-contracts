@@ -14,7 +14,7 @@ contract Right is TradeableERC721Token {
     return _apiBaseUrl;
   }
 
-  function setApiBaseUrl(string memory _url) public onlyOwner returns (bool) {
+  function setApiBaseUrl(string memory _url) public onlyOwner {
     _apiBaseUrl = _url;
   }
 
