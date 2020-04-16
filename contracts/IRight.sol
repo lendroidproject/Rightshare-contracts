@@ -49,8 +49,7 @@ contract IRight is Right {
     * @param values : uint256 array [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, _version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function issue(address[2] memory addresses, bool isExclusive, uint256[6] memory values) public onlyOwner returns (bool _ok) {
-    _ok = false;
+  function issue(address[2] memory addresses, bool isExclusive, uint256[6] memory values) public onlyOwner {
     if (isExclusive) {
         require(values[3] == 1, "IRT: Exclusive token should have maximum supply 1");
         require(values[4] == 1, "IRT: Exclusive token should have serial number 1");
@@ -60,16 +59,13 @@ contract IRight is Right {
     }
     mintTo(addresses[0]);
     _updateMetadata(values[5], values[0], now, values[1], addresses[1], values[2], isExclusive, values[3], values[4]);
-    _ok = true;
   }
 
-  function revoke(address _from, uint256 _tokenId) public onlyOwner returns (bool _ok) {
-    _ok = false;
+  function revoke(address _from, uint256 _tokenId) public onlyOwner {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "IRT: token does not exist");
     delete metadata[_tokenId];
     _burn(_from, _tokenId);
-    _ok = true;
   }
 
   function tokenURI(uint256 _tokenId) external view returns (string memory) {

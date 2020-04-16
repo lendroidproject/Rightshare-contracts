@@ -18,9 +18,8 @@ contract Right is TradeableERC721Token {
     _apiBaseUrl = _url;
   }
 
-  function setProxyRegistryAddress(address _proxyRegistryAddress) public onlyOwner returns (bool _ok) {
+  function setProxyRegistryAddress(address _proxyRegistryAddress) public onlyOwner {
     proxyRegistryAddress = _proxyRegistryAddress;
-    _ok = true;
   }
 
 }

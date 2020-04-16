@@ -61,8 +61,7 @@ contract FRight is Right {
     _rightId = currentTokenId();
   }
 
-  function unfreeze(address _from, uint256 _tokenId) public onlyOwner returns (bool _ok) {
-    _ok = false;
+  function unfreeze(address _from, uint256 _tokenId) public onlyOwner {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
@@ -70,7 +69,6 @@ contract FRight is Right {
     delete isFrozen[_meta.baseAssetAddress][_meta.baseAssetId];
     delete metadata[_tokenId];
     _burn(_from, _tokenId);
-    _ok = true;
   }
 
   function tokenURI(uint256 _tokenId) external view returns (string memory) {
@@ -89,24 +87,20 @@ contract FRight is Right {
     );
   }
 
-  function incrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner returns (bool _ok) {
-    _ok = false;
+  function incrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     require(_meta.maxISupply.sub(_meta.circulatingISupply) >= _amount, "Circulating I Supply cannot be incremented");
     _meta.circulatingISupply += _amount;
-    _ok = true;
   }
 
-  function decrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner returns (bool _ok) {
-    _ok = false;
+  function decrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     if (_meta.circulatingISupply.sub(_amount) >= 0) {
       require(_meta.maxISupply.sub(_amount) >= _meta.circulatingISupply.sub(_amount));
       _meta.circulatingISupply -= _amount;
       _meta.maxISupply -= _amount;
-      _ok = true;
     }
   }
 
