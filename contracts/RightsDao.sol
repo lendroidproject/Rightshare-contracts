@@ -2,6 +2,7 @@ pragma solidity 0.5.11;
 
 import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 import 'openzeppelin-solidity/contracts/utils/Address.sol';
+import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
 import 'openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol';
 
@@ -12,6 +13,7 @@ import "./IRight.sol";
 contract RightsDao is Ownable, IERC721Receiver {
 
   using Address for address;
+  using SafeMath for uint256;
 
   int128 constant CONTRACT_TYPE_RIGHT_F = 1;
   int128 constant CONTRACT_TYPE_RIGHT_I = 2;
@@ -79,24 +81,20 @@ contract RightsDao is Ownable, IERC721Receiver {
 
 
   /**
-    * @dev Set current f version
-    * @param version number
+    * @dev Increment current f version
     */
-  function set_current_f_version(uint256 version) external onlyOwner returns (bool ok) {
+  function increment_current_f_version() external onlyOwner returns (bool ok) {
     ok = false;
-    require(version > 0);
-    current_f_version = version;
+    current_f_version = current_f_version.add(1);
     ok = true;
   }
 
   /**
-    * @dev Set current i version
-    * @param version number
+    * @dev Increment current i version
     */
-  function set_current_i_version(uint256 version) external onlyOwner returns (bool ok) {
+  function increment_current_i_version() external onlyOwner returns (bool ok) {
     ok = false;
-    require(version > 0);
-    current_i_version = version;
+    current_i_version = current_i_version.add(1);
     ok = true;
   }
 

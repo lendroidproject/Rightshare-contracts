@@ -94,42 +94,32 @@ contract("RightsDao", (accounts) => {
   })
 
 
-  describe('set_current_f_version', () => {
+  describe('increment_current_f_version', () => {
     it('succeeds only when version > 0', async () => {
       assert.equal(1, await dao.current_f_version(), "incorrect current_f_version")
       // call by non owner will revert
       await expectRevert(
-        dao.set_current_f_version(2, {from: accounts[1]}),
+        dao.increment_current_f_version({from: accounts[1]}),
         'caller is not the owner',
       )
-      // set_current_f_version to 2
-      await dao.set_current_f_version(2, {from: owner})
+      // increment_current_f_version to 2
+      await dao.increment_current_f_version({from: owner})
       assert.equal(2, await dao.current_f_version(), "incorrect current_f_version")
-      // call with version = 0 will revert
-      await expectRevert(
-        dao.set_current_f_version(0, {from: owner}),
-        'revert',
-      )
     })
   })
 
 
-  describe('set_current_i_version', () => {
+  describe('increment_current_i_version', () => {
     it('succeeds only when version > 0', async () => {
       assert.equal(1, await dao.current_i_version(), "incorrect current_i_version")
       // call by non owner will revert
       await expectRevert(
-        dao.set_current_i_version(2, {from: accounts[1]}),
+        dao.increment_current_i_version({from: accounts[1]}),
         'caller is not the owner',
       )
-      // set_current_f_version to 2
-      await dao.set_current_i_version(2, {from: owner})
+      // increment_current_f_version to 2
+      await dao.increment_current_i_version({from: owner})
       assert.equal(2, await dao.current_i_version(), "incorrect current_i_version")
-      // call with version = 0 will revert
-      await expectRevert(
-        dao.set_current_i_version(0, {from: owner}),
-        'revert',
-      )
     })
   })
 
