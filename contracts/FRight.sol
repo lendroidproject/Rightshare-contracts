@@ -127,11 +127,10 @@ contract FRight is Right {
     }
   }
 
-  function endTimeAndISupplies(uint256 _tokenId) external view returns (uint256 _endTime, uint256 _maxISupply, uint256 _circulatingISupply) {
+  function endTimeAndMaxSupply(uint256 _tokenId) external view returns (uint256 _endTime, uint256 _maxISupply) {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     _endTime = _meta.endTime;
     _maxISupply = _meta.maxISupply;
-    _circulatingISupply = _meta.circulatingISupply;
   }
 }

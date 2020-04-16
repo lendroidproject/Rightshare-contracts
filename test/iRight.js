@@ -6,7 +6,7 @@ contract("IRight", (accounts) => {
   const NFT = artifacts.require("TradeableERC721Token");
 
   const owner = accounts[0]
-  const API_BASE_URL = "https://rinkeby-rightshare-metadata.lendroid.com/api/v1/"
+  const API_BASE_URL = "https://rightshare-metadata.lendroid.com/api/v1/"
 
   let iRight, nft
 
@@ -56,7 +56,7 @@ contract("IRight", (accounts) => {
       // Confirm IRight currentTokenId is 0
       assert.equal(await iRight.currentTokenId(), 0, "currentTokenId is not 0.")
       // Call issue
-      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, 1], {from: owner})
+      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
     it('mints iRight token to accounts[1]', async () => {
@@ -98,13 +98,13 @@ contract("IRight", (accounts) => {
       _maxISupply = 1
       _serialNumber = 1
       // Call issue
-      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, 1], {from: owner})
+      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
     it('updates the tokenURI', async () => {
       const tokenURI = await iRight.tokenURI(2)
       // Confirm IRight tokenURI is correct
-      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/2/i/1609459200/1/1/1/1`, "tokenURI is incorrect.")
+      assert.equal(tokenURI.toString(), `${API_BASE_URL}i/${_baseAssetAddress.toLowerCase()}/2/1609459200/1/1`, "tokenURI is incorrect.")
     })
   })
 
@@ -123,13 +123,13 @@ contract("IRight", (accounts) => {
       _maxISupply = 3
       _serialNumber = 2
       // Call issure
-      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, 1], {from: owner})
+      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
     it('updates the tokenURI', async () => {
       const tokenURI = await iRight.tokenURI(3)
       // Confirm IRight tokenURI is correct
-      assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/3/i/1609459200/0/3/2/1`, "tokenURI is incorrect.")
+      assert.equal(tokenURI.toString(), `${API_BASE_URL}i/${_baseAssetAddress.toLowerCase()}/3/1609459200/0/1`, "tokenURI is incorrect.")
     })
   })
 
@@ -146,29 +146,6 @@ contract("IRight", (accounts) => {
       _baseAssetId = 4
     })
 
-    it('fails when serial number > 1 for exclusive token', async () => {
-      // Call issue
-      await expectRevert(
-        iRight.issue([_to, _baseAssetAddress], true, [_parentId, _endTime, _baseAssetId, 1, 2, 1], {from: owner}),
-        'IRT: Exclusive token should have serial number 1',
-      )
-    })
-
-    it('fails when maximum supply > 1 for exclusive token', async () => {
-      // Call issue
-      await expectRevert(
-        iRight.issue([_to, _baseAssetAddress], true, [_parentId, _endTime, _baseAssetId, 2, 1, 1], {from: owner}),
-        'IRT: Exclusive token should have maximum supply 1',
-      )
-    })
-
-    it('fails when serial number > maximum supply for non-exclusive token', async () => {
-      // Call issue
-      await expectRevert(
-        iRight.issue([_to, _baseAssetAddress], false, [_parentId, _endTime, _baseAssetId, 1, 2, 1], {from: owner}),
-        'IRT: Serial number cannot be greater than maximum supply',
-      )
-    })
   })
 
   describe('revoke', () => {
@@ -186,7 +163,7 @@ contract("IRight", (accounts) => {
       _maxISupply = 1
       _serialNumber = 1
       // Call issue
-      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, 1], {from: owner})
+      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
     it('should pass when token exists', async () => {
@@ -224,7 +201,7 @@ contract("IRight", (accounts) => {
       _maxISupply = 1
       _serialNumber = 1
       // Call issue
-      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, _maxISupply, _serialNumber, 1], {from: owner})
+      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
     it('tokenURI fails', async () => {

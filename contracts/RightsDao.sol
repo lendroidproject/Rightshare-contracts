@@ -162,7 +162,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
     uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
     require(fRightId != 0, "freeze unsuccessful");
-    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[0], 1, values[2]]);
+    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
     ok = true;
   }
@@ -176,11 +176,11 @@ contract RightsDao is Ownable, IERC721Receiver {
     require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]));
     require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]));
-    (uint256 fEndTime, uint256 fMaxISupply, uint256 circulatingISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndISupplies(values[0]);
+    (uint256 fEndTime, uint256 fMaxISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndMaxSupply(values[0]);
     require(fMaxISupply > 0);
     require(values[1] <= fEndTime);
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(values[0]);
-    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [values[0], values[1], baseAssetId, fMaxISupply, circulatingISupply + 1, values[2]]);
+    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [values[0], values[1], baseAssetId, values[2]]);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(values[0], 1);
     ok = true;
   }

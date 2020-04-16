@@ -80,29 +80,23 @@ contract("FRight", (accounts) => {
       assert.equal(result[1], _baseAssetId, "_baseAssetId cannot be 0.")
     })
 
-    it('updates endTimeAndISupplies', async () => {
-      result = await fRight.endTimeAndISupplies(1)
+    it('updates endTimeAndMaxSupply', async () => {
+      result = await fRight.endTimeAndMaxSupply(1)
       // Confirm _endTime
       assert.equal(result[0], _endTime, "_endTime is invalid.")
       // Confirm _maxISupply
       assert.equal(result[1], _maxISupply, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 1, "_circulatingISupply is invalid.")
     })
 
     it('should decrement CirculatingISupply', async () => {
-      result = await fRight.endTimeAndISupplies(1)
+      result = await fRight.endTimeAndMaxSupply(1)
       // Confirm _maxISupply
       assert.equal(result[1], 1, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 1, "_circulatingISupply is invalid.")
       // Decrement circulatingISupply, which also decrements maxISupply
       await fRight.decrementCirculatingISupply(1, 1, {from: owner})
-      result = await fRight.endTimeAndISupplies(1)
+      result = await fRight.endTimeAndMaxSupply(1)
       // Confirm _maxISupply
       assert.equal(result[1], 0, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 0, "_circulatingISupply is invalid.")
       // Decrement again will revert
       await expectRevert(
         fRight.decrementCirculatingISupply(1, 1, {from: owner}),
@@ -139,11 +133,9 @@ contract("FRight", (accounts) => {
     })
 
     it('should not increment CirculatingISupply', async () => {
-      result = await fRight.endTimeAndISupplies(2)
+      result = await fRight.endTimeAndMaxSupply(2)
       // Confirm _maxISupply
       assert.equal(result[1], 1, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 1, "_circulatingISupply is invalid.")
       // Increment will revert
       await expectRevert(
         fRight.incrementCirculatingISupply(2, 1, {from: owner}),
@@ -180,25 +172,19 @@ contract("FRight", (accounts) => {
     })
 
     it('should increment CirculatingISupply', async () => {
-      result = await fRight.endTimeAndISupplies(3)
+      result = await fRight.endTimeAndMaxSupply(3)
       // Confirm _maxISupply
       assert.equal(result[1], 3, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 1, "_circulatingISupply is invalid.")
       // Increment CirculatingISupply
       await fRight.incrementCirculatingISupply(3, 1, {from: owner});
-      result = await fRight.endTimeAndISupplies(3)
+      result = await fRight.endTimeAndMaxSupply(3)
       // Confirm _maxISupply
       assert.equal(result[1], 3, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 2, "_circulatingISupply is invalid.")
       // Increment CirculatingISupply
       await fRight.incrementCirculatingISupply(3, 1, {from: owner});
-      result = await fRight.endTimeAndISupplies(3)
+      result = await fRight.endTimeAndMaxSupply(3)
       // Confirm _maxISupply
       assert.equal(result[1], 3, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 3, "_circulatingISupply is invalid.")
       // Increment will revert
       await expectRevert(
         fRight.incrementCirculatingISupply(3, 1, {from: owner}),
@@ -250,11 +236,9 @@ contract("FRight", (accounts) => {
     it('should pass when circulatingISupply is 0', async () => {
       // Decrement circulatingISupply, which also decrements maxISupply
       await fRight.decrementCirculatingISupply(5, 1, {from: owner})
-      result = await fRight.endTimeAndISupplies(5)
+      result = await fRight.endTimeAndMaxSupply(5)
       // Confirm _maxISupply
       assert.equal(result[1], 0, "_maxISupply is invalid.")
-      // Confirm _circulatingISupply
-      assert.equal(result[2], 0, "_circulatingISupply is invalid.")
       // Call unfreeze fails for incorrect fRight token owner
       await expectRevert(
         fRight.unfreeze(owner, 5, {from: owner}),
@@ -331,10 +315,10 @@ contract("FRight", (accounts) => {
       )
     })
 
-    it('endTimeAndISupplies fails', async () => {
-      // Call endTimeAndISupplies
+    it('endTimeAndMaxSupply fails', async () => {
+      // Call endTimeAndMaxSupply
       await expectRevert(
-        fRight.endTimeAndISupplies(8),
+        fRight.endTimeAndMaxSupply(8),
         'FRT: token does not exist',
       )
     })
