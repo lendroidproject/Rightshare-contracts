@@ -1,6 +1,7 @@
 pragma solidity 0.5.11;
 
 import 'openzeppelin-solidity/contracts/token/ERC721/ERC721Full.sol';
+import 'openzeppelin-solidity/contracts/utils/Address.sol';
 import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Strings.sol';
 
@@ -16,6 +17,7 @@ contract ProxyRegistry {
  */
 contract TradeableERC721Token is ERC721Full, Ownable {
   using Strings for string;
+  using Address for address;
 
   address proxyRegistryAddress;
   uint256 private _currentTokenId = 0;
@@ -75,12 +77,14 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     view
     returns (bool)
   {
+    if (proxyRegistryAddress == address(0)) {
+      return super.isApprovedForAll(owner, operator);
+    }
     // Whitelist OpenSea proxy contract for easy trading.
     ProxyRegistry proxyRegistry = ProxyRegistry(proxyRegistryAddress);
     if (address(proxyRegistry.proxies(owner)) == operator) {
         return true;
     }
-
     return super.isApprovedForAll(owner, operator);
   }
 }
