@@ -1,5 +1,56 @@
 const { expectRevert } = require('@openzeppelin/test-helpers')
 
+
+contract("TradeableERC721Token", (accounts) => {
+
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
+  const OwnableDelegateProxy = artifacts.require("OwnableDelegateProxy")
+  const ProxyRegistry = artifacts.require("ProxyRegistry")
+  const owner = accounts[0]
+
+  let proxy, proxyRegistry
+
+  before(async () => {
+    proxy = await OwnableDelegateProxy.new()
+    proxyRegistry = await ProxyRegistry.new()
+    operator = proxy.address
+  })
+
+  describe('setProxy', () => {
+
+    it('fails when proxyContractAddress is invalid', async () => {
+      // call when proxyContractAddress = ZERO_ADDRESS will revert
+      await expectRevert(
+        proxyRegistry.setProxy(owner, ZERO_ADDRESS, {from: owner}),
+        'invalid proxy contract address',
+      )
+      // call when proxyContractAddress is not ZERO_ADDRESS and not contract address will revert
+      await expectRevert(
+        proxyRegistry.setProxy(owner, accounts[1], {from: owner}),
+        'invalid proxy contract address',
+      )
+    })
+
+    it('fails when called by non-owner', async () => {
+      // call by non-owner
+      await expectRevert(
+        proxyRegistry.setProxy(accounts[1], operator, {from: accounts[1]}),
+        'caller is not the owner',
+      )
+    })
+
+    it('succeeds when proxyContractAddress is valid', async () => {
+      assert.equal(ZERO_ADDRESS, await proxyRegistry.proxies(owner), "proxy address for owner should be ZERO_ADDRESS")
+      // call when proxyContractAddress = operator
+      await proxyRegistry.setProxy(owner, operator, {from: owner})
+      assert.equal(operator, await proxyRegistry.proxies(owner), "proxy address for owner should not be ZERO_ADDRESS")
+    })
+
+  })
+
+});
+
+
 contract("TradeableERC721Token", (accounts) => {
 
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -71,8 +122,14 @@ contract("TradeableERC721Token", (accounts) => {
     })
 
     describe('isApprovedForAll', () => {
-      it('should invoke ProxyRegistryAddress', async () => {
+      it('should invoke ProxyRegistryAddress and return false', async () => {
         assert.equal(false, await token.isApprovedForAll(owner, operator), "owner has not authorized proxy")
+      })
+
+      it('should invoke ProxyRegistryAddress and return true', async () => {
+        // call when proxyContractAddress = operator
+        await proxyRegistry.setProxy(owner, operator, {from: owner})
+        assert.equal(true, await token.isApprovedForAll(owner, operator), "owner has authorized proxy")
       })
 
     })

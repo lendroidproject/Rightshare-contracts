@@ -7,8 +7,19 @@ import './Strings.sol';
 
 contract OwnableDelegateProxy { }
 
-contract ProxyRegistry {
-    mapping(address => OwnableDelegateProxy) public proxies;
+contract ProxyRegistry is Ownable {
+  using Address for address;
+  mapping(address => OwnableDelegateProxy) public proxies;
+
+  /**
+    * @dev whitelist a proxyContractAddress for the given owner
+    * @param owner address
+    * @param proxyContractAddress address of proxy Contract
+    */
+  function setProxy(address owner, address proxyContractAddress) external onlyOwner {
+    require(proxyContractAddress.isContract(), "invalid proxy contract address");
+    proxies[owner] = OwnableDelegateProxy(proxyContractAddress);
+  }
 }
 
 /**

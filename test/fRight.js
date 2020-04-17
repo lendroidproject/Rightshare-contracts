@@ -306,6 +306,20 @@ contract("FRight", (accounts) => {
       await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
+    it('should fail for incorrect tokenId', async () => {
+      // Call unfreeze will fail
+      await expectRevert(
+        fRight.unfreeze(accounts[1], 6, {from: owner}),
+        'FRT: token does not exist',
+      )
+
+      // Call unfreeze with tokenId = 0 will fail
+      await expectRevert(
+        fRight.unfreeze(accounts[1], 0, {from: owner}),
+        'invalid token id',
+      )
+    })
+
     it('should pass when circulatingISupply is 0', async () => {
       // Decrement circulatingISupply, which also decrements maxISupply
       await fRight.decrementCirculatingISupply(5, 1, {from: owner})
@@ -319,20 +333,6 @@ contract("FRight", (accounts) => {
       )
       // Call unfreeze
       await fRight.unfreeze(accounts[1], 5, {from: owner})
-    })
-
-    it('should fail for incorrect tokenId', async () => {
-      // Call unfreeze will fail
-      await expectRevert(
-        fRight.unfreeze(accounts[1], 5, {from: owner}),
-        'FRT: token does not exist',
-      )
-
-      // Call unfreeze with tokenId = 0 will fail
-      await expectRevert(
-        fRight.unfreeze(accounts[1], 0, {from: owner}),
-        'invalid token id',
-      )
     })
 
     it('should fail when unfreezable', async () => {
