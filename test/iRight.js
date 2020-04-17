@@ -7,6 +7,7 @@ contract("IRight", (accounts) => {
 
   const owner = accounts[0]
   const API_BASE_URL = "https://rightshare-metadata.lendroid.com/api/v1/"
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
   let iRight, nft
 
@@ -146,6 +147,54 @@ contract("IRight", (accounts) => {
       _baseAssetId = 4
     })
 
+    it('should fail if to is ZERO_ADDRESS', async () => {
+      // Call issue fails if to is ZERO_ADDRESS
+      await expectRevert(
+        iRight.issue([ZERO_ADDRESS, _baseAssetAddress], true, [_parentId, _endTime, _baseAssetId, 1], {from: owner}),
+        'revert',
+      )
+    })
+
+    it('should fail if _baseAssetAddress is ZERO_ADDRESS', async () => {
+      // Call issue fails if _baseAssetAddress is ZERO_ADDRESS
+      await expectRevert(
+        iRight.issue([_to, ZERO_ADDRESS], true, [_parentId, _endTime, _baseAssetId, 1], {from: owner}),
+        'invalid base asset address',
+      )
+    })
+
+    it('should fail if _parentId is 0', async () => {
+      // Call issue fails if _parentId is 0
+      await expectRevert(
+        iRight.issue([_to, _baseAssetAddress], true, [0, _endTime, _baseAssetId, 1], {from: owner}),
+        'invalid parent id',
+      )
+    })
+
+    it('should fail if _endTime is invalid', async () => {
+      // Call issue fails if version is 0
+      await expectRevert(
+        iRight.issue([_to, _baseAssetAddress], true, [_parentId, 0, _baseAssetId, 1], {from: owner}),
+        'invalid expiry',
+      )
+    })
+
+    it('should fail if _baseAssetId is 0', async () => {
+      // Call issue fails if _baseAssetId is 0
+      await expectRevert(
+        iRight.issue([_to, _baseAssetAddress], true, [_parentId, _endTime, 0, 1], {from: owner}),
+        'invalid base asset id',
+      )
+    })
+
+    it('should fail if version is 0', async () => {
+      // Call issue fails if version is 0
+      await expectRevert(
+        iRight.issue([_to, _baseAssetAddress], true, [_parentId, _endTime, _baseAssetId, 0], {from: owner}),
+        'invalid version',
+      )
+    })
+
   })
 
   describe('revoke', () => {
@@ -204,7 +253,22 @@ contract("IRight", (accounts) => {
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
+    it('revoke fails', async () => {
+      // Call revoke with tokenId = 0
+      await expectRevert(
+        iRight.revoke(owner, 0, {from: owner}),
+        'invalid token id',
+      )
+
+    })
+
     it('tokenURI fails', async () => {
+      // Call tokenURI with tokenId = 0
+      await expectRevert(
+        iRight.tokenURI(0),
+        'invalid token id',
+      )
+
       // Call tokenURI
       await expectRevert(
         iRight.tokenURI(8),
@@ -213,7 +277,13 @@ contract("IRight", (accounts) => {
     })
 
     it('parentId fails', async () => {
-      // Call isIMintAble
+      // Call parentId with tokenId = 0
+      await expectRevert(
+        iRight.parentId(0),
+        'invalid token id',
+      )
+
+      // Call parentId
       await expectRevert(
         iRight.parentId(8),
         'IRT: token does not exist',
@@ -221,6 +291,12 @@ contract("IRight", (accounts) => {
     })
 
     it('baseAsset fails', async () => {
+      // Call baseAsset with tokenId = 0
+      await expectRevert(
+        iRight.baseAsset(0),
+        'invalid token id',
+      )
+
       // Call baseAsset
       await expectRevert(
         iRight.baseAsset(8),
