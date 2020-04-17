@@ -78,8 +78,8 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     view
     returns (bool)
   {
-    require(owner != address(0));
-    require(operator != address(0));
+    require(owner != address(0), "owner address cannot be zero");
+    require(operator != address(0), "operator address cannot be zero");
     if (proxyRegistryAddress == address(0)) {
       return super.isApprovedForAll(owner, operator);
     }
