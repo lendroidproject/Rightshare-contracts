@@ -108,7 +108,7 @@ contract RightsDao is Ownable, IERC721Receiver {
 
 
   /**
-    * @dev Set base url of the server API representing the metadata of a RIght Token
+    * @dev Set base url of the server API representing the metadata of a Right Token
     * @param rightType type of Right contract
     * @param url API base url
     */
@@ -125,7 +125,7 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Transfer ownership of the RIght contract.
+    * @dev Transfer ownership of the Right contract.
     * @param rightType type of Right contract
     * @param proxyRegistryAddress address of the Right's Proxy Registry
     */
@@ -203,7 +203,7 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Burn an FRight token for a given FRight token Id, and
+    * @dev Burn an FRight token for a given FRight token Id, and return the original nft back to the user
     * @param fRightId id of the FRight Token
     */
   function unfreeze(uint256 fRightId) external returns (bool ok) {

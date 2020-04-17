@@ -27,7 +27,7 @@ contract TradeableERC721Token is ERC721Full, Ownable {
   }
 
   /**
-    * @dev Mints a token to an address with a tokenURI.
+    * @dev Mints a token to a given address
     * @param _to address of the future owner of the token
     */
   function mintTo(address _to) public onlyOwner {
@@ -68,7 +68,7 @@ contract TradeableERC721Token is ERC721Full, Ownable {
   }
 
   /**
-   * Override isApprovedForAll to whitelist user's OpenSea proxy accounts to enable gas-less listings.
+   * Override isApprovedForAll to whitelist user's proxy accounts (useful for sites such as opensea to enable gas-less listings)
    */
   function isApprovedForAll(
     address owner,
@@ -83,7 +83,7 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     if (proxyRegistryAddress == address(0)) {
       return super.isApprovedForAll(owner, operator);
     }
-    // Whitelist OpenSea proxy contract for easy trading.
+    // Check if owner has whitelisted proxy contract
     ProxyRegistry proxyRegistry = ProxyRegistry(proxyRegistryAddress);
     if (address(proxyRegistry.proxies(owner)) == operator) {
         return true;

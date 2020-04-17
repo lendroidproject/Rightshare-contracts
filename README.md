@@ -7,9 +7,9 @@ The architecture comprises 4 main smart contracts:
 1. Right.sol
 2. FRight.sol
 3. IRight.sol
-4. RightsDao.vy
+4. RightsDao.sol
 
-The Rights have been written in Solidity v.6.0, while the Dao has been written in [Vyper version 0.1.16](https://vyper.readthedocs.io "Vyper ReadTheDocs").
+All the contracts in this repository have been written in Solidity v.5.11.
 
 Please use Git commits according to this article: https://chris.beams.io/posts/git-commit
 
@@ -26,26 +26,6 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
 
   `npm install`
 
-
-* Install Python and Vyper v0.1.0-beta.16
-
-  * Python 3.7 is a pre-requisite, and can be installed from [here](https://www.python.org/downloads "Python version downloads")
-
-  * Install virtualenv from pip
-
-    `pip install virtualenv` or `pip3 install virtualenv`
-
-  * Create a virtual environment
-
-    `virtualenv -p python3.7 --no-site-packages ~/venv-rightshare`
-
-  * Activate the virtual environment
-
-    `source ~/venv-rightshare/bin/activate`
-
-  * Install dependencies from requirements.txt via pip
-
-    `pip install -r requirements.txt`
 
 ## Test and development
 

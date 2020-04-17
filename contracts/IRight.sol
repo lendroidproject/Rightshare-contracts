@@ -40,7 +40,7 @@ contract IRight is Right {
   }
 
   /**
-    * @dev Mint IRight Token and update mateadata
+    * @dev Mint IRight Token and update metadata
     * @param addresses : address array [_to, _baseAssetAddress]
     * @param values : uint256 array [_parentId, _endTime, _baseAssetId, _version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
