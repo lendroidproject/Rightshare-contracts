@@ -7,6 +7,7 @@ contract("FRight", (accounts) => {
 
   const owner = accounts[0]
   const API_BASE_URL = "https://rinkeby-rightshare-metadata.lendroid.com/api/v1/"
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
   let fRight, nft
 
@@ -205,10 +206,82 @@ contract("FRight", (accounts) => {
       _baseAssetId = 4
       _isExclusive = true
       _maxISupply = 1
+    })
+
+    it('fails when base asset address is not a contract', async () => {
+      // Call freeze when base asset address is zero address
+      await expectRevert(
+        fRight.freeze([_to, ZERO_ADDRESS], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
+        'invalid base asset address',
+      )
+
+      // Call freeze when base asset address is non-zero, and not a contract address
+      await expectRevert(
+        fRight.freeze([_to, accounts[1]], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
+        'invalid base asset address',
+      )
+
+    })
+
+    it('fails when expiry is invalid', async () => {
+      // Call freeze when expiry = 0
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [0, _baseAssetId, _maxISupply, 1], {from: owner}),
+        'invalid expiry',
+      )
+
+    })
+
+    it('fails when base asset id is invalid', async () => {
+      // Call freeze when base asset id = 0
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, 0, _maxISupply, 1], {from: owner}),
+        'invalid base asset id',
+      )
+
+    })
+
+    it('fails when version is invalid', async () => {
+      // Call freeze when version = 0
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 0], {from: owner}),
+        'invalid version',
+      )
+
+    })
+
+
+    it('fails when _maxISupply is invalid', async () => {
+      // Call freeze when _maxISupply = 0 for excluisve freeze
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], true, [_endTime, _baseAssetId, 0, 1], {from: owner}),
+        'invalid maximum I supply',
+      )
+
+      // Call freeze when _maxISupply = 0 for non-excluisve freeze
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], false, [_endTime, _baseAssetId, 0, 1], {from: owner}),
+        'invalid maximum I supply',
+      )
+
+      // Call freeze when _maxISupply > 1 for excluisve freeze
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], true, [_endTime, _baseAssetId, 2, 1], {from: owner}),
+        'invalid maximum I supply',
+      )
+
+      // Call freeze when _maxISupply = 1 for non-excluisve freeze
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], false, [_endTime, _baseAssetId, 1, 1], {from: owner}),
+        'invalid maximum I supply',
+      )
+
+    })
+
+
+    it('fails when called again', async () => {
       // Call freeze
       await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
-    })
-    it('fails when called again', async () => {
       // Call freeze again
       await expectRevert(
         fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
@@ -254,6 +327,12 @@ contract("FRight", (accounts) => {
         fRight.unfreeze(accounts[1], 5, {from: owner}),
         'FRT: token does not exist',
       )
+
+      // Call unfreeze with tokenId = 0 will fail
+      await expectRevert(
+        fRight.unfreeze(accounts[1], 0, {from: owner}),
+        'invalid token id',
+      )
     })
 
     it('should fail when unfreezable', async () => {
@@ -284,10 +363,16 @@ contract("FRight", (accounts) => {
     })
 
     it('tokenURI fails', async () => {
-      // Call tokenURI
+      // Call tokenURI with non-existent tokenId
       await expectRevert(
         fRight.tokenURI(8),
         'FRT: token does not exist',
+      )
+
+      // Call tokenURI with tokenId = 0
+      await expectRevert(
+        fRight.tokenURI(0),
+        'invalid token id',
       )
     })
 
@@ -297,6 +382,12 @@ contract("FRight", (accounts) => {
         fRight.isUnfreezable(8),
         'FRT: token does not exist',
       )
+
+      // Call isUnfreezable with tokenId = 0
+      await expectRevert(
+        fRight.isUnfreezable(0),
+        'invalid token id',
+      )
     })
 
     it('isIMintAble fails', async () => {
@@ -304,6 +395,12 @@ contract("FRight", (accounts) => {
       await expectRevert(
         fRight.isIMintAble(8),
         'FRT: token does not exist',
+      )
+
+      // Call isIMintAble with tokenId = 0
+      await expectRevert(
+        fRight.isIMintAble(0),
+        'invalid token id',
       )
     })
 
@@ -313,6 +410,12 @@ contract("FRight", (accounts) => {
         fRight.baseAsset(8),
         'FRT: token does not exist',
       )
+
+      // Call baseAsset with tokenId = 0
+      await expectRevert(
+        fRight.baseAsset(0),
+        'invalid token id',
+      )
     })
 
     it('endTimeAndMaxSupply fails', async () => {
@@ -320,6 +423,12 @@ contract("FRight", (accounts) => {
       await expectRevert(
         fRight.endTimeAndMaxSupply(8),
         'FRT: token does not exist',
+      )
+
+      // Call endTimeAndMaxSupply with tokenId = 0
+      await expectRevert(
+        fRight.endTimeAndMaxSupply(0),
+        'invalid token id',
       )
     })
 
@@ -329,6 +438,12 @@ contract("FRight", (accounts) => {
         fRight.incrementCirculatingISupply(8, 1, {from: owner}),
         'FRT: token does not exist',
       )
+
+      // Call incrementCirculatingISupply with tokenId = 0
+      await expectRevert(
+        fRight.incrementCirculatingISupply(0, 1, {from: owner}),
+        'invalid token id',
+      )
     })
 
     it('decrementCirculatingISupply fails', async () => {
@@ -336,6 +451,12 @@ contract("FRight", (accounts) => {
       await expectRevert(
         fRight.decrementCirculatingISupply(8, 1, {from: owner}),
         'FRT: token does not exist',
+      )
+
+      // Call decrementCirculatingISupply with tokenId = 0
+      await expectRevert(
+        fRight.decrementCirculatingISupply(0, 1, {from: owner}),
+        'invalid token id',
       )
     })
   })

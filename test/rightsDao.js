@@ -9,6 +9,7 @@ contract("RightsDao", (accounts) => {
 
   const owner = accounts[0]
   const API_BASE_URL = "https://rinkeby-rightshare-metadata.lendroid.com/api/v1/"
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
   let dao, fRight, iRight, nft
 
@@ -189,6 +190,11 @@ contract("RightsDao", (accounts) => {
         dao.set_right_proxy_registry(1, accounts[1], {from: accounts[1]}),
         'caller is not the owner',
       )
+      // call with contract address = ZERO_ADDRESS will revert
+      await expectRevert(
+        dao.set_right_proxy_registry(1, ZERO_ADDRESS),
+        'invalid proxy registry address',
+      )
     })
 
     it('allows owner to set proxy registry of i right', async () => {
@@ -220,7 +226,13 @@ contract("RightsDao", (accounts) => {
     })
 
     it('fails for incorrect _maxISupply', async () => {
-      // call by non owner will revert
+      // call with _maxISupply = 0
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [0, 1, 1], {from: owner}),
+        'invalid maximum I supply',
+      )
+
+      // call with _maxISupply = 2
       await expectRevert(
         dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [2, 1, 1], {from: owner}),
         'revert',
@@ -232,6 +244,42 @@ contract("RightsDao", (accounts) => {
       await expectRevert(
         dao.freeze( _baseAssetAddress, 2, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
         'revert',
+      )
+    })
+
+    it('fails for incorrect _endTime', async () => {
+      // call with past _endTime will revert
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, 0, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
+        'expiry cannot be in the past',
+      )
+    })
+
+    it('fails for incorrect f_version', async () => {
+      // call with f_version = 0 will revert
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 0, 1], {from: owner}),
+        'invalid f version',
+      )
+
+      // call with f_version = 3 will revert
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 3, 1], {from: owner}),
+        'invalid f version',
+      )
+    })
+
+    it('fails for incorrect i_version', async () => {
+      // call with i_version = 0 will revert
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 0], {from: owner}),
+        'invalid i version',
+      )
+
+      // call with i_version = 3 will revert
+      await expectRevert(
+        dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 3], {from: owner}),
+        'invalid i version',
       )
     })
 
@@ -284,8 +332,18 @@ contract("RightsDao", (accounts) => {
       )
       // call with expiry > endtime will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _endTime+1, 1], {from: accounts[2]}),
+        dao.issue_i([_f_right_id, _endTime+1, 1], {from: owner}),
         'revert',
+      )
+      // call with i_version = 0 will fail
+      await expectRevert(
+        dao.issue_i([_f_right_id, _endTime, 0], {from: owner}),
+        'invalid i version',
+      )
+      // call with i_version > 2 will fail
+      await expectRevert(
+        dao.issue_i([_f_right_id, _endTime, 3], {from: owner}),
+        'invalid i version',
       )
       // Call issue_i again will work
       await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})

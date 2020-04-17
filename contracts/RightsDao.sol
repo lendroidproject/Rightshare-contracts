@@ -132,7 +132,6 @@ contract RightsDao is Ownable, IERC721Receiver {
   function set_right_proxy_registry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool ok) {
     ok = false;
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
-    require(proxyRegistryAddress != address(0));
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
     }
