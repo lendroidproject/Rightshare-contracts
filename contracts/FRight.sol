@@ -49,7 +49,7 @@ contract FRight is Right {
     * @param values : uint256 array [_endTime, _baseAssetId, _maxISupply, _version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function freeze(address[2] memory addresses, bool isExclusive, uint256[4] memory values) public onlyOwner returns (uint256 _rightId) {
+  function freeze(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner returns (uint256 _rightId) {
     _rightId = 0;
     require(addresses[1].isContract(), "invalid base asset address");
     require(values[0] > block.timestamp, "invalid expiry");
@@ -68,13 +68,17 @@ contract FRight is Right {
     _rightId = currentTokenId();
   }
 
-  function unfreeze(address _from, uint256 _tokenId) public onlyOwner {
+  function isUnfreezable(uint256 _tokenId) public view returns (bool) {
     require(_tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
-    require((now >= _meta.endTime) || (_meta.circulatingISupply == 0), "FRT: token is not unfreezable");
-    delete isFrozen[_meta.baseAssetAddress][_meta.baseAssetId];
+    return (now >= _meta.endTime) || (_meta.circulatingISupply == 0);
+  }
+
+  function unfreeze(address _from, uint256 _tokenId) external onlyOwner {
+    require(isUnfreezable(_tokenId), "FRT: token is not unfreezable");
+    delete isFrozen[metadata[_tokenId].baseAssetAddress][metadata[_tokenId].baseAssetId];
     delete metadata[_tokenId];
     _burn(_from, _tokenId);
   }
@@ -101,26 +105,16 @@ contract FRight is Right {
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
     require(_meta.maxISupply.sub(_meta.circulatingISupply) >= _amount, "Circulating I Supply cannot be incremented");
-    _meta.circulatingISupply += _amount;
+    _meta.circulatingISupply = _meta.circulatingISupply.add(_amount);
   }
 
   function decrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner {
     require(_tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    if (_meta.circulatingISupply.sub(_amount) >= 0) {
-      require(_meta.maxISupply.sub(_amount) >= _meta.circulatingISupply.sub(_amount));
-      _meta.circulatingISupply -= _amount;
-      _meta.maxISupply -= _amount;
-    }
-  }
-
-  function isUnfreezable(uint256 _tokenId) external view returns (bool _unfreezable) {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
-    _unfreezable = (now >= _meta.endTime) || (_meta.circulatingISupply == 0);
+    require(_meta.maxISupply.sub(_amount) >= _meta.circulatingISupply.sub(_amount));
+    _meta.circulatingISupply = _meta.circulatingISupply.sub(_amount);
+    _meta.maxISupply = _meta.maxISupply.sub(_amount);
   }
 
   function baseAsset(uint256 _tokenId) external view returns (address _baseAssetAddress, uint256 _baseAssetId) {
@@ -131,14 +125,15 @@ contract FRight is Right {
     _baseAssetId = _meta.baseAssetId;
   }
 
-  function isIMintAble(uint256 _tokenId) external view returns (bool _mintable) {
+  function isIMintAble(uint256 _tokenId) external view returns (bool) {
     require(_tokenId > 0, "invalid token id");
-    _mintable = false;
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+    require(!_meta.isExclusive, "cannot mint exclusive iRight");
     if (_meta.maxISupply.sub(_meta.circulatingISupply) > 0) {
-      _mintable = true;
+      return true;
     }
+    return false;
   }
 
   function endTimeAndMaxSupply(uint256 _tokenId) external view returns (uint256 _endTime, uint256 _maxISupply) {

@@ -58,20 +58,18 @@ contract RightsDao is Ownable, IERC721Receiver {
   /**
     * @dev set whitelisted_freeze_activated value as true
     */
-  function activate_whitelisted_freeze() external onlyOwner returns (bool ok) {
-    ok = false;
+  function activate_whitelisted_freeze() external onlyOwner returns (bool) {
     _toggle_whitelisted_freeze(true);
-    ok = true;
+    return true;
   }
 
 
   /**
     * @dev set whitelisted_freeze_activated value as false
     */
-  function deactivate_whitelisted_freeze() external onlyOwner returns (bool ok) {
-    ok = false;
+  function deactivate_whitelisted_freeze() external onlyOwner returns (bool) {
     _toggle_whitelisted_freeze(false);
-    ok = true;
+    return true;
   }
 
 
@@ -80,30 +78,27 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param addr given address
     * @param status whitelist status of given address
     */
-  function toggle_whitelist_status(address addr, bool status) external onlyOwner returns (bool ok) {
-    ok = false;
+  function toggle_whitelist_status(address addr, bool status) external onlyOwner returns (bool) {
     require(addr != address(0));
     is_whitelisted[addr] = status;
-    ok = true;
+    return true;
   }
 
 
   /**
     * @dev Increment current f version
     */
-  function increment_current_f_version() external onlyOwner returns (bool ok) {
-    ok = false;
+  function increment_current_f_version() external onlyOwner returns (bool) {
     current_f_version = current_f_version.add(1);
-    ok = true;
+    return true;
   }
 
   /**
     * @dev Increment current i version
     */
-  function increment_current_i_version() external onlyOwner returns (bool ok) {
-    ok = false;
+  function increment_current_i_version() external onlyOwner returns (bool) {
     current_i_version = current_i_version.add(1);
-    ok = true;
+    return true;
   }
 
 
@@ -112,8 +107,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param rightType type of Right contract
     * @param url API base url
     */
-  function set_right_api_base_url(int128 rightType, string calldata url) external onlyOwner returns (bool ok) {
-    ok = false;
+  function set_right_api_base_url(int128 rightType, string calldata url) external onlyOwner returns (bool) {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setApiBaseUrl(url);
@@ -121,7 +115,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     else {
       IRight(contracts[rightType]).setApiBaseUrl(url);
     }
-    ok = true;
+    return true;
   }
 
   /**
@@ -129,8 +123,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param rightType type of Right contract
     * @param proxyRegistryAddress address of the Right's Proxy Registry
     */
-  function set_right_proxy_registry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool ok) {
-    ok = false;
+  function set_right_proxy_registry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool) {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
@@ -138,7 +131,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     else {
       IRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
     }
-    ok = true;
+    return true;
   }
 
   /**
@@ -149,8 +142,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param isExclusive exclusivity of IRights for the ERC721 Token
     * @param values uint256 array [maxISupply, f_version, i_version]
     */
-  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool ok) {
-    ok = false;
+  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool) {
     if (whitelisted_freeze_activated) {
       require(is_whitelisted[msg.sender]);
     }
@@ -162,15 +154,14 @@ contract RightsDao is Ownable, IERC721Receiver {
     require(fRightId != 0, "freeze unsuccessful");
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
-    ok = true;
+    return true;
   }
 
   /**
     * @dev Mint an IRight token for a given FRight token Id
     * @param values uint256 array [fRightId, expiry, i_version]
     */
-  function issue_i(uint256[3] calldata values) external returns (bool ok) {
-    ok = false;
+  function issue_i(uint256[3] calldata values) external returns (bool) {
     require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]));
     require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]));
@@ -180,15 +171,14 @@ contract RightsDao is Ownable, IERC721Receiver {
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(values[0]);
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [values[0], values[1], baseAssetId, values[2]]);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(values[0], 1);
-    ok = true;
+    return true;
   }
 
   /**
     * @dev Burn an IRight token for a given IRight token Id
     * @param iRightId id of the IRight Token
     */
-  function revoke_i(uint256 iRightId) external returns (bool ok) {
-    ok = false;
+  function revoke_i(uint256 iRightId) external returns (bool) {
     require(msg.sender == IRight(contracts[CONTRACT_TYPE_RIGHT_I]).ownerOf(iRightId));
     (address baseAssetAddress, uint256 baseAssetId) = IRight(contracts[CONTRACT_TYPE_RIGHT_I]).baseAsset(iRightId);
     bool isBaseAssetFrozen = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isFrozen(baseAssetAddress, baseAssetId);
@@ -198,20 +188,19 @@ contract RightsDao is Ownable, IERC721Receiver {
       FRight(contracts[CONTRACT_TYPE_RIGHT_F]).decrementCirculatingISupply(fRightId, 1);
     }
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).revoke(msg.sender, iRightId);
-    ok = true;
+    return true;
   }
 
   /**
     * @dev Burn an FRight token for a given FRight token Id, and return the original nft back to the user
     * @param fRightId id of the FRight Token
     */
-  function unfreeze(uint256 fRightId) external returns (bool ok) {
-    ok = false;
+  function unfreeze(uint256 fRightId) external returns (bool) {
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isUnfreezable(fRightId));
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(fRightId);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).unfreeze(msg.sender, fRightId);
     ERC721(baseAssetAddress).transferFrom(address(this), msg.sender, baseAssetId);
-    ok = true;
+    return true;
   }
 
 }

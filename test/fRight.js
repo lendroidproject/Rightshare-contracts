@@ -128,9 +128,11 @@ contract("FRight", (accounts) => {
       assert.equal(tokenURI.toString(), `${API_BASE_URL}${_baseAssetAddress.toLowerCase()}/2/f/1609459200/1/1/1/1`, "tokenURI is incorrect.")
     })
 
-    it('IMintAble is false', async () => {
-      // Confirm FRight is not IMintAble
-      assert.equal(await fRight.isIMintAble(2), false, "fRight should not be IMintAble.")
+    it('reverts when IMintAble is called', async () => {
+      await expectRevert(
+        fRight.isIMintAble(2),
+        'cannot mint exclusive iRight',
+      )
     })
 
     it('should not increment CirculatingISupply', async () => {
@@ -206,6 +208,15 @@ contract("FRight", (accounts) => {
       _baseAssetId = 4
       _isExclusive = true
       _maxISupply = 1
+    })
+
+    it('fails when called by non-owner', async () => {
+      // Call freeze when expiry = 0
+      await expectRevert(
+        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: accounts[1]}),
+        'caller is not the owner',
+      )
+
     })
 
     it('fails when base asset address is not a contract', async () => {
@@ -304,6 +315,15 @@ contract("FRight", (accounts) => {
       _maxISupply = 1
       // Call freeze
       await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+    })
+
+    it('fails when called by non-owner', async () => {
+      // Call freeze when expiry = 0
+      await expectRevert(
+        fRight.unfreeze(accounts[1], 5, {from: accounts[1]}),
+        'caller is not the owner',
+      )
+
     })
 
     it('should fail for incorrect tokenId', async () => {

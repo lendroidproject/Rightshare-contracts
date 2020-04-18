@@ -45,7 +45,7 @@ contract IRight is Right {
     * @param values : uint256 array [_parentId, _endTime, _baseAssetId, _version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function issue(address[2] memory addresses, bool isExclusive, uint256[4] memory values) public onlyOwner {
+  function issue(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner {
     require(addresses[1].isContract(), "invalid base asset address");
     require(values[0] > 0, "invalid parent id");
     require(values[1] > block.timestamp, "invalid expiry");
@@ -55,7 +55,7 @@ contract IRight is Right {
     _updateMetadata(values[3], values[0], now, values[1], addresses[1], values[2], isExclusive);
   }
 
-  function revoke(address _from, uint256 _tokenId) public onlyOwner {
+  function revoke(address _from, uint256 _tokenId) external onlyOwner {
     require(_tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[_tokenId];
     require(_meta.tokenId == _tokenId, "IRT: token does not exist");

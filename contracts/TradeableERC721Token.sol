@@ -28,7 +28,6 @@ contract ProxyRegistry is Ownable {
  */
 contract TradeableERC721Token is ERC721Full, Ownable {
   using Strings for string;
-  using Address for address;
 
   address proxyRegistryAddress;
   uint256 private _currentTokenId = 0;
@@ -64,7 +63,7 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     * @dev increments the value of _currentTokenId
     */
   function _incrementTokenId() private  {
-    _currentTokenId++;
+    _currentTokenId = _currentTokenId.add(1);
   }
 
   function baseTokenURI() public view returns (string memory) {
