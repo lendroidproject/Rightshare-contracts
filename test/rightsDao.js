@@ -25,106 +25,106 @@ contract("RightsDao", (accounts) => {
       assert.equal(owner, await dao.owner(), "owner is not deployer")
     })
 
-    it('deploys with whitelisted_freeze_activated set to true', async () => {
-      assert.equal(true, await dao.whitelisted_freeze_activated(), "whitelisted_freeze_activated is false during deployment")
+    it('deploys with whitelistedFreezeActivated set to true', async () => {
+      assert.equal(true, await dao.whitelistedFreezeActivated(), "whitelistedFreezeActivated is false during deployment")
     })
 
-    it('deploys with current_f_version set to 1', async () => {
-      assert.equal(1, await dao.current_f_version(), "current_f_version is not 1 during deployment")
+    it('deploys with currentFVersion set to 1', async () => {
+      assert.equal(1, await dao.currentFVersion(), "currentFVersion is not 1 during deployment")
     })
 
-    it('deploys with current_i_version set to 1', async () => {
-      assert.equal(1, await dao.current_i_version(), "current_i_version is not 1 during deployment")
+    it('deploys with currentIVersion set to 1', async () => {
+      assert.equal(1, await dao.currentIVersion(), "currentIVersion is not 1 during deployment")
     })
   })
 
-  describe('deactivate_whitelisted_freeze', () => {
+  describe('deactivateWhitelistedFreeze', () => {
     it('succeeds only when already activated', async () => {
-      assert.equal(true, await dao.whitelisted_freeze_activated(), "incorrect value of whitelisted_freeze_activated")
+      assert.equal(true, await dao.whitelistedFreezeActivated(), "incorrect value of whitelistedFreezeActivated")
       // call by non owner will revert
       await expectRevert(
-        dao.deactivate_whitelisted_freeze({from: accounts[1]}),
+        dao.deactivateWhitelistedFreeze({from: accounts[1]}),
         'caller is not the owner',
       )
       // deactivate whitelisted freeze
-      await dao.deactivate_whitelisted_freeze({from: owner})
-      assert.equal(false, await dao.whitelisted_freeze_activated(), "incorrect value of whitelisted_freeze_activated")
+      await dao.deactivateWhitelistedFreeze({from: owner})
+      assert.equal(false, await dao.whitelistedFreezeActivated(), "incorrect value of whitelistedFreezeActivated")
       // call when already deactivated will revert
       await expectRevert(
-        dao.deactivate_whitelisted_freeze({from: owner}),
+        dao.deactivateWhitelistedFreeze({from: owner}),
         'whitelisted freeze is already deactivated',
       )
     })
   })
 
-  describe('activate_whitelisted_freeze', () => {
+  describe('activateWhitelistedFreeze', () => {
     it('succeeds only when already deactivated', async () => {
-      assert.equal(false, await dao.whitelisted_freeze_activated(), "incorrect value of whitelisted_freeze_activated")
+      assert.equal(false, await dao.whitelistedFreezeActivated(), "incorrect value of whitelistedFreezeActivated")
       // call by non owner will revert
       await expectRevert(
-        dao.activate_whitelisted_freeze({from: accounts[1]}),
+        dao.activateWhitelistedFreeze({from: accounts[1]}),
         'caller is not the owner',
       )
       // deactivate whitelisted freeze
-      await dao.activate_whitelisted_freeze({from: owner})
-      assert.equal(true, await dao.whitelisted_freeze_activated(), "incorrect value of whitelisted_freeze_activated")
+      await dao.activateWhitelistedFreeze({from: owner})
+      assert.equal(true, await dao.whitelistedFreezeActivated(), "incorrect value of whitelistedFreezeActivated")
       // call when already activated will revert
       await expectRevert(
-        dao.activate_whitelisted_freeze({from: owner}),
+        dao.activateWhitelistedFreeze({from: owner}),
         'whitelisted freeze is already activated',
       )
     })
   })
 
 
-  describe('toggle_whitelist_status', () => {
+  describe('toggleWhitelistStatus', () => {
     it('succeeds only when called by owner', async () => {
-      assert.equal(false, await dao.is_whitelisted(accounts[1]), "incorrect whitelist status")
+      assert.equal(false, await dao.isWhitelisted(accounts[1]), "incorrect whitelist status")
       // call by non owner will revert
       await expectRevert(
-        dao.toggle_whitelist_status(accounts[1], true, {from: accounts[1]}),
+        dao.toggleWhitelistStatus(accounts[1], true, {from: accounts[1]}),
         'caller is not the owner',
       )
       // whitelist accounts[1]
-      await dao.toggle_whitelist_status(accounts[1], true, {from: owner})
-      assert.equal(true, await dao.is_whitelisted(accounts[1]), "incorrect whitelist status")
+      await dao.toggleWhitelistStatus(accounts[1], true, {from: owner})
+      assert.equal(true, await dao.isWhitelisted(accounts[1]), "incorrect whitelist status")
       // revoke whitelist status of accounts[1]
-      await dao.toggle_whitelist_status(accounts[1], false, {from: owner})
-      assert.equal(false, await dao.is_whitelisted(accounts[1]), "incorrect whitelist status")
+      await dao.toggleWhitelistStatus(accounts[1], false, {from: owner})
+      assert.equal(false, await dao.isWhitelisted(accounts[1]), "incorrect whitelist status")
     })
   })
 
 
-  describe('increment_current_f_version', () => {
+  describe('incrementCurrentFVersion', () => {
     it('succeeds only when version > 0', async () => {
-      assert.equal(1, await dao.current_f_version(), "incorrect current_f_version")
+      assert.equal(1, await dao.currentFVersion(), "incorrect currentFVersion")
       // call by non owner will revert
       await expectRevert(
-        dao.increment_current_f_version({from: accounts[1]}),
+        dao.incrementCurrentFVersion({from: accounts[1]}),
         'caller is not the owner',
       )
-      // increment_current_f_version to 2
-      await dao.increment_current_f_version({from: owner})
-      assert.equal(2, await dao.current_f_version(), "incorrect current_f_version")
+      // incrementCurrentFVersion to 2
+      await dao.incrementCurrentFVersion({from: owner})
+      assert.equal(2, await dao.currentFVersion(), "incorrect currentFVersion")
     })
   })
 
 
-  describe('increment_current_i_version', () => {
+  describe('incrementCurrentIVersion', () => {
     it('succeeds only when version > 0', async () => {
-      assert.equal(1, await dao.current_i_version(), "incorrect current_i_version")
+      assert.equal(1, await dao.currentIVersion(), "incorrect currentIVersion")
       // call by non owner will revert
       await expectRevert(
-        dao.increment_current_i_version({from: accounts[1]}),
+        dao.incrementCurrentIVersion({from: accounts[1]}),
         'caller is not the owner',
       )
-      // increment_current_f_version to 2
-      await dao.increment_current_i_version({from: owner})
-      assert.equal(2, await dao.current_i_version(), "incorrect current_i_version")
+      // incrementCurrentFVersion to 2
+      await dao.incrementCurrentIVersion({from: owner})
+      assert.equal(2, await dao.currentIVersion(), "incorrect currentIVersion")
     })
   })
 
-  describe('set_right_api_base_url', () => {
+  describe('setRightApiBaseUrl', () => {
 
     before(async () => {
       // transfer fright ownership to dao
@@ -138,20 +138,20 @@ contract("RightsDao", (accounts) => {
       assert.equal(await fRight.baseTokenURI(), "", "apiBaseURL is not empty when deployed.")
       // call with invalid contract type will revert
       await expectRevert(
-        dao.set_right_api_base_url(0, API_BASE_URL, {from: owner}),
+        dao.setRightApiBaseUrl(0, API_BASE_URL, {from: owner}),
         'invalid contract type',
       )
       await expectRevert(
-        dao.set_right_api_base_url(3, API_BASE_URL, {from: owner}),
+        dao.setRightApiBaseUrl(3, API_BASE_URL, {from: owner}),
         'invalid contract type',
       )
       // call with invalid owner will revert
       await expectRevert(
-        dao.set_right_api_base_url(1, API_BASE_URL, {from: accounts[1]}),
+        dao.setRightApiBaseUrl(1, API_BASE_URL, {from: accounts[1]}),
         'caller is not the owner',
       )
       // Set apiBaseURL
-      await dao.set_right_api_base_url(1, API_BASE_URL, {from: owner})
+      await dao.setRightApiBaseUrl(1, API_BASE_URL, {from: owner})
       // Confirm apiBaseURL has been set
       assert.equal(await fRight.baseTokenURI(), API_BASE_URL, "apiBaseURL has not been set correctly.")
     })
@@ -161,48 +161,48 @@ contract("RightsDao", (accounts) => {
       assert.equal(await iRight.baseTokenURI(), "", "apiBaseURL is not empty when deployed.")
       // call with invalid owner will revert
       await expectRevert(
-        dao.set_right_api_base_url(2, API_BASE_URL, {from: accounts[1]}),
+        dao.setRightApiBaseUrl(2, API_BASE_URL, {from: accounts[1]}),
         'caller is not the owner',
       )
       // Set apiBaseURL
-      await dao.set_right_api_base_url(2, API_BASE_URL, {from: owner})
+      await dao.setRightApiBaseUrl(2, API_BASE_URL, {from: owner})
       // Confirm apiBaseURL has been set
       assert.equal(await iRight.baseTokenURI(), API_BASE_URL, "apiBaseURL has not been set correctly.")
     })
   })
 
-  describe('set_right_proxy_registry', () => {
+  describe('setRightProxyRegistry', () => {
 
     it('allows owner to set proxy registry of f right', async () => {
       // transfer i right ownership to accounts[1]
-      await dao.set_right_proxy_registry(1, accounts[1]);
+      await dao.setRightProxyRegistry(1, accounts[1]);
       // call with invalid contract type will revert
       await expectRevert(
-        dao.set_right_proxy_registry(0, accounts[1]),
+        dao.setRightProxyRegistry(0, accounts[1]),
         'invalid contract type',
       )
       await expectRevert(
-        dao.set_right_proxy_registry(3, accounts[1]),
+        dao.setRightProxyRegistry(3, accounts[1]),
         'invalid contract type',
       )
       // call by non owner will revert
       await expectRevert(
-        dao.set_right_proxy_registry(1, accounts[1], {from: accounts[1]}),
+        dao.setRightProxyRegistry(1, accounts[1], {from: accounts[1]}),
         'caller is not the owner',
       )
       // call with contract address = ZERO_ADDRESS will revert
       await expectRevert(
-        dao.set_right_proxy_registry(1, ZERO_ADDRESS),
+        dao.setRightProxyRegistry(1, ZERO_ADDRESS),
         'invalid proxy registry address',
       )
     })
 
     it('allows owner to set proxy registry of i right', async () => {
       // transfer i right ownership to accounts[1]
-      await dao.set_right_proxy_registry(2, accounts[1]);
+      await dao.setRightProxyRegistry(2, accounts[1]);
       // call by non owner will revert
       await expectRevert(
-        dao.set_right_proxy_registry(2, accounts[1], {from: accounts[1]}),
+        dao.setRightProxyRegistry(2, accounts[1], {from: accounts[1]}),
         'caller is not the owner',
       )
     })
@@ -222,7 +222,7 @@ contract("RightsDao", (accounts) => {
       // approves
       await nft.approve(dao.address, 1, {from: owner})
       // deactivate whitelisted freeze
-      await dao.deactivate_whitelisted_freeze({from: owner})
+      await dao.deactivateWhitelistedFreeze({from: owner})
     })
 
     it('fails for incorrect _maxISupply', async () => {
@@ -285,14 +285,14 @@ contract("RightsDao", (accounts) => {
 
     it('fails if whitelisted freeze is activated and caller is not whitelisted', async () => {
       // activate whitelisted freeze
-      await dao.activate_whitelisted_freeze({from: owner})
+      await dao.activateWhitelistedFreeze({from: owner})
       // call by non owner will revert
       await expectRevert(
         dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
         'sender is not whitelisted',
       )
       // deactivate whitelisted freeze
-      await dao.deactivate_whitelisted_freeze({from: owner})
+      await dao.deactivateWhitelistedFreeze({from: owner})
     })
 
     it('succeeds', async () => {
@@ -306,7 +306,7 @@ contract("RightsDao", (accounts) => {
     })
   })
 
-  describe('issue_i', () => {
+  describe('issueI', () => {
     let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     it('works for non exclusive', async () => {
@@ -323,33 +323,33 @@ contract("RightsDao", (accounts) => {
       await nft.approve(dao.address, 2, {from: owner})
       // Call freeze
       await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
-      // Call issue_i
-      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
+      // Call issueI
+      await dao.issueI([_f_right_id, _expiry, 1], {from: owner})
       // call by non owner will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _expiry, 1], {from: accounts[2]}),
+        dao.issueI([_f_right_id, _expiry, 1], {from: accounts[2]}),
         'revert',
       )
       // call with expiry > endtime will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _endTime+1, 1], {from: owner}),
+        dao.issueI([_f_right_id, _endTime+1, 1], {from: owner}),
         'revert',
       )
       // call with i_version = 0 will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _endTime, 0], {from: owner}),
+        dao.issueI([_f_right_id, _endTime, 0], {from: owner}),
         'invalid i version',
       )
       // call with i_version > 2 will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _endTime, 3], {from: owner}),
+        dao.issueI([_f_right_id, _endTime, 3], {from: owner}),
         'invalid i version',
       )
-      // Call issue_i again will work
-      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
-      // call issue_i again will fail
+      // Call issueI again will work
+      await dao.issueI([_f_right_id, _expiry, 1], {from: owner})
+      // call issueI again will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _expiry, 1], {from: owner}),
+        dao.issueI([_f_right_id, _expiry, 1], {from: owner}),
         'revert',
       )
     })
@@ -368,15 +368,15 @@ contract("RightsDao", (accounts) => {
       await nft.approve(dao.address, 3, {from: owner})
       // Call freeze
       await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
-      // call issue_i will fail
+      // call issueI will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _expiry, 1], {from: owner}),
+        dao.issueI([_f_right_id, _expiry, 1], {from: owner}),
         'revert',
       )
     })
   })
 
-  describe('revoke_i', () => {
+  describe('revokeI', () => {
     let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     it('succeeds for non exclusive', async () => {
@@ -393,32 +393,32 @@ contract("RightsDao", (accounts) => {
       await nft.approve(dao.address, 4, {from: owner})
       // Call freeze
       await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
-      // Call issue_i
-      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
+      // Call issueI
+      await dao.issueI([_f_right_id, _expiry, 1], {from: owner})
       assert.equal(7, await iRight.currentTokenId(), 'is wrong id value')
-      // call revoke_i will fail with non owner
+      // call revokeI will fail with non owner
       await expectRevert(
-        dao.revoke_i(7, {from: accounts[1]}),
+        dao.revokeI(7, {from: accounts[1]}),
         'revert',
       )
-      // Call revoke_i
-      await dao.revoke_i(7, {from: owner})
-      // Call issue_i
-      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
+      // Call revokeI
+      await dao.revokeI(7, {from: owner})
+      // Call issueI
+      await dao.issueI([_f_right_id, _expiry, 1], {from: owner})
       assert.equal(8, await iRight.currentTokenId(), 'is wrong id value')
-      // Call revoke_i
-      await dao.revoke_i(8, {from: owner})
+      // Call revokeI
+      await dao.revokeI(8, {from: owner})
       // 1-1
-      // call issue_i will fail
+      // call issueI will fail
       await expectRevert(
-        dao.issue_i([_f_right_id, _expiry, 1], {from: owner}),
+        dao.issueI([_f_right_id, _expiry, 1], {from: owner}),
         'revert',
       )
-      // Call revoke_i
-      await dao.revoke_i(6, {from: owner})
-      // call revoke_i will fail
+      // Call revokeI
+      await dao.revokeI(6, {from: owner})
+      // call revokeI will fail
       await expectRevert(
-        dao.revoke_i(8, {from: owner}),
+        dao.revokeI(8, {from: owner}),
         'revert',
       )
     })
@@ -447,19 +447,19 @@ contract("RightsDao", (accounts) => {
         dao.unfreeze(_f_right_id, {from: owner}),
         'revert',
       )
-      // Call issue_i
-      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
+      // Call issueI
+      await dao.issueI([_f_right_id, _expiry, 1], {from: owner})
       currentTokenId = await iRight.currentTokenId()
       assert.equal(10, currentTokenId.toString(), 'is wrong id value')
-      // Call revoke_i
-      await dao.revoke_i(10, {from: owner})
-      // Call issue_i
-      await dao.issue_i([_f_right_id, _expiry, 1], {from: owner})
+      // Call revokeI
+      await dao.revokeI(10, {from: owner})
+      // Call issueI
+      await dao.issueI([_f_right_id, _expiry, 1], {from: owner})
       assert.equal(11, await iRight.currentTokenId(), 'is wrong id value')
-      // Call revoke_i
-      await dao.revoke_i(11, {from: owner})
-      // Call revoke_i
-      await dao.revoke_i(9, {from: owner})
+      // Call revokeI
+      await dao.revokeI(11, {from: owner})
+      // Call revokeI
+      await dao.revokeI(9, {from: owner})
       // call unfreeze will succeed
       await dao.unfreeze(_f_right_id, {from: owner})
       // call unfreeze will fail

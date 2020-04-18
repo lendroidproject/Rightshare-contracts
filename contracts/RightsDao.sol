@@ -20,12 +20,12 @@ contract RightsDao is Ownable, IERC721Receiver {
 
   mapping(int128 => address) public contracts;
 
-  mapping(address => bool) public is_whitelisted;
+  mapping(address => bool) public isWhitelisted;
 
-  bool public whitelisted_freeze_activated = true;
+  bool public whitelistedFreezeActivated = true;
 
-  uint256 public current_f_version = 1;
-  uint256 public current_i_version = 1;
+  uint256 public currentFVersion = 1;
+  uint256 public currentIVersion = 1;
 
   constructor(address fRightContractAddress, address iRightContractAddress) public {
     require(fRightContractAddress.isContract(), "invalid fRightContractAddress");
@@ -36,39 +36,39 @@ contract RightsDao is Ownable, IERC721Receiver {
 
 
   function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
-      return this.onERC721Received.selector;
+    return this.onERC721Received.selector;
   }
 
 
   /**
-    * @dev set whitelisted_freeze_activated value as true or false
+    * @dev set whitelistedFreezeActivated value as true or false
     * @param activate toggle value
     */
-  function _toggle_whitelisted_freeze(bool activate) internal {
+  function _toggleWhitelistedFreeze(bool activate) internal {
     if (activate) {
-      require(!whitelisted_freeze_activated, "whitelisted freeze is already activated");
+      require(!whitelistedFreezeActivated, "whitelisted freeze is already activated");
     }
     else {
-      require(whitelisted_freeze_activated, "whitelisted freeze is already deactivated");
+      require(whitelistedFreezeActivated, "whitelisted freeze is already deactivated");
     }
-    whitelisted_freeze_activated = activate;
+    whitelistedFreezeActivated = activate;
   }
 
 
   /**
-    * @dev set whitelisted_freeze_activated value as true
+    * @dev set whitelistedFreezeActivated value as true
     */
-  function activate_whitelisted_freeze() external onlyOwner returns (bool) {
-    _toggle_whitelisted_freeze(true);
+  function activateWhitelistedFreeze() external onlyOwner returns (bool) {
+    _toggleWhitelistedFreeze(true);
     return true;
   }
 
 
   /**
-    * @dev set whitelisted_freeze_activated value as false
+    * @dev set whitelistedFreezeActivated value as false
     */
-  function deactivate_whitelisted_freeze() external onlyOwner returns (bool) {
-    _toggle_whitelisted_freeze(false);
+  function deactivateWhitelistedFreeze() external onlyOwner returns (bool) {
+    _toggleWhitelistedFreeze(false);
     return true;
   }
 
@@ -78,9 +78,9 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param addr given address
     * @param status whitelist status of given address
     */
-  function toggle_whitelist_status(address addr, bool status) external onlyOwner returns (bool) {
+  function toggleWhitelistStatus(address addr, bool status) external onlyOwner returns (bool) {
     require(addr != address(0));
-    is_whitelisted[addr] = status;
+    isWhitelisted[addr] = status;
     return true;
   }
 
@@ -88,16 +88,16 @@ contract RightsDao is Ownable, IERC721Receiver {
   /**
     * @dev Increment current f version
     */
-  function increment_current_f_version() external onlyOwner returns (bool) {
-    current_f_version = current_f_version.add(1);
+  function incrementCurrentFVersion() external onlyOwner returns (bool) {
+    currentFVersion = currentFVersion.add(1);
     return true;
   }
 
   /**
     * @dev Increment current i version
     */
-  function increment_current_i_version() external onlyOwner returns (bool) {
-    current_i_version = current_i_version.add(1);
+  function incrementCurrentIVersion() external onlyOwner returns (bool) {
+    currentIVersion = currentIVersion.add(1);
     return true;
   }
 
@@ -107,7 +107,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param rightType type of Right contract
     * @param url API base url
     */
-  function set_right_api_base_url(int128 rightType, string calldata url) external onlyOwner returns (bool) {
+  function setRightApiBaseUrl(int128 rightType, string calldata url) external onlyOwner returns (bool) {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setApiBaseUrl(url);
@@ -123,7 +123,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param rightType type of Right contract
     * @param proxyRegistryAddress address of the Right's Proxy Registry
     */
-  function set_right_proxy_registry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool) {
+  function setRightProxyRegistry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool) {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
@@ -143,13 +143,13 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param values uint256 array [maxISupply, f_version, i_version]
     */
   function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool) {
-    if (whitelisted_freeze_activated) {
-      require(is_whitelisted[msg.sender], "sender is not whitelisted");
+    if (whitelistedFreezeActivated) {
+      require(isWhitelisted[msg.sender], "sender is not whitelisted");
     }
     require(values[0] > 0, "invalid maximum I supply");
     require(expiry > block.timestamp, "expiry should be in the future");
-    require((values[1] > 0) && (values[1] <= current_f_version), "invalid f version");
-    require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
+    require((values[1] > 0) && (values[1] <= currentFVersion), "invalid f version");
+    require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
     uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
     require(fRightId != 0, "freeze unsuccessful");
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
@@ -161,9 +161,9 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @dev Mint an IRight token for a given FRight token Id
     * @param values uint256 array [fRightId, expiry, i_version]
     */
-  function issue_i(uint256[3] calldata values) external returns (bool) {
+  function issueI(uint256[3] calldata values) external returns (bool) {
     require(values[1] > block.timestamp, "expiry should be in the future");
-    require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
+    require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]), "cannot mint iRight");
     require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]), "sender is not the owner of fRight");
     (uint256 fEndTime, uint256 fMaxISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndMaxSupply(values[0]);
@@ -179,7 +179,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @dev Burn an IRight token for a given IRight token Id
     * @param iRightId id of the IRight Token
     */
-  function revoke_i(uint256 iRightId) external returns (bool) {
+  function revokeI(uint256 iRightId) external returns (bool) {
     require(msg.sender == IRight(contracts[CONTRACT_TYPE_RIGHT_I]).ownerOf(iRightId), "sender is not the owner of iRight");
     (address baseAssetAddress, uint256 baseAssetId) = IRight(contracts[CONTRACT_TYPE_RIGHT_I]).baseAsset(iRightId);
     bool isBaseAssetFrozen = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isFrozen(baseAssetAddress, baseAssetId);

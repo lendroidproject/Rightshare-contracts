@@ -32,18 +32,18 @@ contract TradeableERC721Token is ERC721Full, Ownable {
   address proxyRegistryAddress;
   uint256 private _currentTokenId = 0;
 
-  constructor(string memory _name, string memory _symbol, address _proxyRegistryAddress) ERC721Full(_name, _symbol) public {
-    proxyRegistryAddress = _proxyRegistryAddress;
+  constructor(string memory name, string memory symbol, address registryAddress) ERC721Full(name, symbol) public {
+    proxyRegistryAddress = registryAddress;
   }
 
   /**
     * @dev Mints a token to a given address
-    * @param _to address of the future owner of the token
+    * @param to address of the future owner of the token
     */
-  function mintTo(address _to) public onlyOwner {
-    require(_to != address(0));
+  function mintTo(address to) public onlyOwner {
+    require(to != address(0));
     uint256 newTokenId = _getNextTokenId();
-    _mint(_to, newTokenId);
+    _mint(to, newTokenId);
     _incrementTokenId();
   }
 
@@ -70,10 +70,10 @@ contract TradeableERC721Token is ERC721Full, Ownable {
     return "";
   }
 
-  function tokenURI(uint256 _tokenId) external view returns (string memory) {
+  function tokenURI(uint256 tokenId) external view returns (string memory) {
     return Strings.strConcat(
         baseTokenURI(),
-        Strings.uint2str(_tokenId)
+        Strings.uint2str(tokenId)
     );
   }
 

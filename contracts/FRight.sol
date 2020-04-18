@@ -30,27 +30,27 @@ contract FRight is Right {
   /**
     * @dev updates token metadata
     */
-  function _updateMetadata(uint256 _version, uint256 _startTime, uint256 _endTime, address _baseAssetAddress, uint256 _baseAssetId, bool _isExclusive, uint256 _maxISupply, uint256 _circulatingISupply) private  {
+  function _updateMetadata(uint256 version, uint256 startTime, uint256 endTime, address baseAssetAddress, uint256 baseAssetId, bool isExclusive, uint256 maxISupply, uint256 circulatingISupply) private  {
     Metadata storage _meta = metadata[currentTokenId()];
     _meta.tokenId = currentTokenId();
-    _meta.version = _version;
-    _meta.startTime = _startTime;
-    _meta.endTime = _endTime;
-    _meta.baseAssetAddress = _baseAssetAddress;
-    _meta.baseAssetId = _baseAssetId;
-    _meta.isExclusive = _isExclusive;
-    _meta.maxISupply = _maxISupply;
-    _meta.circulatingISupply = _circulatingISupply;
+    _meta.version = version;
+    _meta.startTime = startTime;
+    _meta.endTime = endTime;
+    _meta.baseAssetAddress = baseAssetAddress;
+    _meta.baseAssetId = baseAssetId;
+    _meta.isExclusive = isExclusive;
+    _meta.maxISupply = maxISupply;
+    _meta.circulatingISupply = circulatingISupply;
   }
 
   /**
     * @dev Mint FRight Token and update mateadata
-    * @param addresses : address array [_to, _baseAssetAddress]
-    * @param values : uint256 array [_endTime, _baseAssetId, _maxISupply, _version]
+    * @param addresses : address array [_to, baseAssetAddress]
+    * @param values : uint256 array [endTime, baseAssetId, maxISupply, version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function freeze(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner returns (uint256 _rightId) {
-    _rightId = 0;
+  function freeze(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner returns (uint256 rightId) {
+    rightId = 0;
     require(addresses[1].isContract(), "invalid base asset address");
     require(values[0] > block.timestamp, "invalid expiry");
     require(values[1] > 0, "invalid base asset id");
@@ -65,28 +65,29 @@ contract FRight is Right {
     }
     mintTo(addresses[0]);
     _updateMetadata(values[3], now, values[0], addresses[1], values[1], isExclusive, values[2], 1);
-    _rightId = currentTokenId();
+    rightId = currentTokenId();
   }
 
-  function isUnfreezable(uint256 _tokenId) public view returns (bool) {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+  function isUnfreezable(uint256 tokenId) public view returns (bool) {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
+    // uncommenting the next line gives 100% branch coverage on this contract
     require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
     return (now >= _meta.endTime) || (_meta.circulatingISupply == 0);
   }
 
-  function unfreeze(address _from, uint256 _tokenId) external onlyOwner {
-    require(isUnfreezable(_tokenId), "FRT: token is not unfreezable");
-    delete isFrozen[metadata[_tokenId].baseAssetAddress][metadata[_tokenId].baseAssetId];
-    delete metadata[_tokenId];
-    _burn(_from, _tokenId);
+  function unfreeze(address from, uint256 tokenId) external onlyOwner {
+    require(isUnfreezable(tokenId), "FRT: token is not unfreezable");
+    delete isFrozen[metadata[tokenId].baseAssetAddress][metadata[tokenId].baseAssetId];
+    delete metadata[tokenId];
+    _burn(from, tokenId);
   }
 
-  function tokenURI(uint256 _tokenId) external view returns (string memory) {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+  function tokenURI(uint256 tokenId) external view returns (string memory) {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
     string memory _metadataUri = Strings.strConcat(
         Strings.strConcat(Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
         Strings.strConcat("f/", Strings.uint2str(_meta.endTime), "/"),
@@ -100,35 +101,35 @@ contract FRight is Right {
     );
   }
 
-  function incrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    require(_meta.maxISupply.sub(_meta.circulatingISupply) >= _amount, "Circulating I Supply cannot be incremented");
-    _meta.circulatingISupply = _meta.circulatingISupply.add(_amount);
+  function incrementCirculatingISupply(uint256 tokenId, uint256 amount) external onlyOwner {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
+    require(_meta.maxISupply.sub(_meta.circulatingISupply) >= amount, "Circulating I Supply cannot be incremented");
+    _meta.circulatingISupply = _meta.circulatingISupply.add(amount);
   }
 
-  function decrementCirculatingISupply(uint256 _tokenId, uint256 _amount) external onlyOwner {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    require(_meta.maxISupply.sub(_amount) >= _meta.circulatingISupply.sub(_amount));
-    _meta.circulatingISupply = _meta.circulatingISupply.sub(_amount);
-    _meta.maxISupply = _meta.maxISupply.sub(_amount);
+  function decrementCirculatingISupply(uint256 tokenId, uint256 amount) external onlyOwner {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
+    require(_meta.maxISupply.sub(amount) >= _meta.circulatingISupply.sub(amount), "invalid amount");
+    _meta.circulatingISupply = _meta.circulatingISupply.sub(amount);
+    _meta.maxISupply = _meta.maxISupply.sub(amount);
   }
 
-  function baseAsset(uint256 _tokenId) external view returns (address _baseAssetAddress, uint256 _baseAssetId) {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    _baseAssetAddress = _meta.baseAssetAddress;
-    _baseAssetId = _meta.baseAssetId;
+  function baseAsset(uint256 tokenId) external view returns (address baseAssetAddress, uint256 baseAssetId) {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
+    baseAssetAddress = _meta.baseAssetAddress;
+    baseAssetId = _meta.baseAssetId;
   }
 
-  function isIMintAble(uint256 _tokenId) external view returns (bool) {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
+  function isIMintAble(uint256 tokenId) external view returns (bool) {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
     require(!_meta.isExclusive, "cannot mint exclusive iRight");
     if (_meta.maxISupply.sub(_meta.circulatingISupply) > 0) {
       return true;
@@ -136,11 +137,11 @@ contract FRight is Right {
     return false;
   }
 
-  function endTimeAndMaxSupply(uint256 _tokenId) external view returns (uint256 _endTime, uint256 _maxISupply) {
-    require(_tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[_tokenId];
-    require(_meta.tokenId == _tokenId, "FRT: token does not exist");
-    _endTime = _meta.endTime;
-    _maxISupply = _meta.maxISupply;
+  function endTimeAndMaxSupply(uint256 tokenId) external view returns (uint256 endTime, uint256 maxISupply) {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
+    endTime = _meta.endTime;
+    maxISupply = _meta.maxISupply;
   }
 }

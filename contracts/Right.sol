@@ -14,13 +14,13 @@ contract Right is TradeableERC721Token {
     return _apiBaseUrl;
   }
 
-  function setApiBaseUrl(string calldata _url) external onlyOwner {
-    _apiBaseUrl = _url;
+  function setApiBaseUrl(string calldata url) external onlyOwner {
+    _apiBaseUrl = url;
   }
 
-  function setProxyRegistryAddress(address _proxyRegistryAddress) external onlyOwner {
-    require(_proxyRegistryAddress != address(0), "invalid proxy registry address");
-    proxyRegistryAddress = _proxyRegistryAddress;
+  function setProxyRegistryAddress(address registryAddress) external onlyOwner {
+    require(registryAddress != address(0), "invalid proxy registry address");
+    proxyRegistryAddress = registryAddress;
   }
 
 }
