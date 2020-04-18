@@ -46,10 +46,10 @@ contract RightsDao is Ownable, IERC721Receiver {
     */
   function _toggle_whitelisted_freeze(bool activate) internal {
     if (activate) {
-      require(!whitelisted_freeze_activated);
+      require(!whitelisted_freeze_activated, "whitelisted freeze is already activated");
     }
     else {
-      require(whitelisted_freeze_activated);
+      require(whitelisted_freeze_activated, "whitelisted freeze is already deactivated");
     }
     whitelisted_freeze_activated = activate;
   }
@@ -144,10 +144,10 @@ contract RightsDao is Ownable, IERC721Receiver {
     */
   function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool) {
     if (whitelisted_freeze_activated) {
-      require(is_whitelisted[msg.sender]);
+      require(is_whitelisted[msg.sender], "sender is not whitelisted");
     }
     require(values[0] > 0, "invalid maximum I supply");
-    require(expiry > block.timestamp, "expiry cannot be in the past");
+    require(expiry > block.timestamp, "expiry should be in the future");
     require((values[1] > 0) && (values[1] <= current_f_version), "invalid f version");
     require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
     uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
@@ -162,12 +162,13 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param values uint256 array [fRightId, expiry, i_version]
     */
   function issue_i(uint256[3] calldata values) external returns (bool) {
+    require(values[1] > block.timestamp, "expiry should be in the future");
     require((values[2] > 0) && (values[2] <= current_i_version), "invalid i version");
-    require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]));
-    require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]));
+    require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]), "cannot mint iRight");
+    require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]), "sender is not the owner of fRight");
     (uint256 fEndTime, uint256 fMaxISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndMaxSupply(values[0]);
-    require(fMaxISupply > 0);
-    require(values[1] <= fEndTime);
+    require(fMaxISupply > 0, "maximum I supply is zero");
+    require(values[1] <= fEndTime, "expiry cannot exceed fRight expiry");
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(values[0]);
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [values[0], values[1], baseAssetId, values[2]]);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(values[0], 1);
@@ -179,12 +180,12 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param iRightId id of the IRight Token
     */
   function revoke_i(uint256 iRightId) external returns (bool) {
-    require(msg.sender == IRight(contracts[CONTRACT_TYPE_RIGHT_I]).ownerOf(iRightId));
+    require(msg.sender == IRight(contracts[CONTRACT_TYPE_RIGHT_I]).ownerOf(iRightId), "sender is not the owner of iRight");
     (address baseAssetAddress, uint256 baseAssetId) = IRight(contracts[CONTRACT_TYPE_RIGHT_I]).baseAsset(iRightId);
     bool isBaseAssetFrozen = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isFrozen(baseAssetAddress, baseAssetId);
     if (isBaseAssetFrozen) {
       uint256 fRightId = IRight(contracts[CONTRACT_TYPE_RIGHT_I]).parentId(iRightId);
-      require(fRightId != 0);
+      require(fRightId != 0, "invalid fRight parent");
       FRight(contracts[CONTRACT_TYPE_RIGHT_F]).decrementCirculatingISupply(fRightId, 1);
     }
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).revoke(msg.sender, iRightId);
@@ -196,7 +197,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param fRightId id of the FRight Token
     */
   function unfreeze(uint256 fRightId) external returns (bool) {
-    require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isUnfreezable(fRightId));
+    require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isUnfreezable(fRightId), "fRight is unfreezable");
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(fRightId);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).unfreeze(msg.sender, fRightId);
     ERC721(baseAssetAddress).transferFrom(address(this), msg.sender, baseAssetId);

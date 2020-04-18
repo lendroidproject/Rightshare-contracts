@@ -52,7 +52,7 @@ contract("RightsDao", (accounts) => {
       // call when already deactivated will revert
       await expectRevert(
         dao.deactivate_whitelisted_freeze({from: owner}),
-        'revert',
+        'whitelisted freeze is already deactivated',
       )
     })
   })
@@ -71,7 +71,7 @@ contract("RightsDao", (accounts) => {
       // call when already activated will revert
       await expectRevert(
         dao.activate_whitelisted_freeze({from: owner}),
-        'revert',
+        'whitelisted freeze is already activated',
       )
     })
   })
@@ -251,7 +251,7 @@ contract("RightsDao", (accounts) => {
       // call with past _endTime will revert
       await expectRevert(
         dao.freeze( _baseAssetAddress, _baseAssetId, 0, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
-        'expiry cannot be in the past',
+        'expiry should be in the future',
       )
     })
 
@@ -289,7 +289,7 @@ contract("RightsDao", (accounts) => {
       // call by non owner will revert
       await expectRevert(
         dao.freeze( _baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner}),
-        'revert',
+        'sender is not whitelisted',
       )
       // deactivate whitelisted freeze
       await dao.deactivate_whitelisted_freeze({from: owner})
