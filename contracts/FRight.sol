@@ -72,8 +72,6 @@ contract FRight is Right {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "FRT: token does not exist");
-    // uncommenting the next line gives 100% branch coverage on this contract
-    require(isFrozen[_meta.baseAssetAddress][_meta.baseAssetId], "Asset is not frozen");
     return (now >= _meta.endTime) || (_meta.circulatingISupply == 0);
   }
 
