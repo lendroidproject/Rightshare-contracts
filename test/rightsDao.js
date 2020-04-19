@@ -92,7 +92,7 @@ contract("RightsDao", (accounts) => {
         dao.activateWhitelistedFreeze({from: accounts[1]}),
         'caller is not the owner',
       )
-      // deactivate whitelisted freeze
+      // activate whitelisted freeze
       await dao.activateWhitelistedFreeze({from: owner})
       assert.equal(true, await dao.whitelistedFreezeActivated(), "incorrect value of whitelistedFreezeActivated")
       // call when already activated will revert
@@ -511,10 +511,10 @@ contract("RightsDao", (accounts) => {
     })
   })
 
-  describe('unfreeze and iRevoke after expiry of rights', () => {
+  describe('when freeze can be performed only by whitelisted accounts', () => {
     let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, currentTokenId
 
-    it('succeeds when all i tokens are revoked', async () => {
+    it('succeeds only when activateWhitelistedFreeze is true and sender is whitelisted', async () => {
       // Mint NFT to owner
       await nft.mintTo(owner);
       _endTime = 1609459200
@@ -526,14 +526,44 @@ contract("RightsDao", (accounts) => {
       _expiry = 1609459190
       // approves
       await nft.approve(dao.address, 6, {from: owner})
+      // activate whitelisted freeze
+      await dao.activateWhitelistedFreeze({from: owner})
+      // whitelist owner
+      await dao.toggleWhitelistStatus(owner, true, {from: owner})
+      // Call freeze
+      await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
+      // call revokeI will succeed
+      await dao.revokeI(12, {from: owner})
+      // call unfreeze will succeed
+      await dao.unfreeze(_f_right_id, {from: owner})
+    })
+  })
+
+  describe('unfreeze and iRevoke after expiry of rights', () => {
+    let _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, currentTokenId
+
+    it('succeeds when all i tokens are revoked', async () => {
+      // deactivate whitelisted freeze
+      await dao.deactivateWhitelistedFreeze({from: owner})
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 7
+      _isExclusive = true
+      _maxISupply = 1
+      _f_right_id = 7
+      _expiry = 1609459190
+      // approves
+      await nft.approve(dao.address, 7, {from: owner})
       // Call freeze
       await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, _isExclusive, [_maxISupply, 1, 1], {from: owner})
       // time travel to _expiry
       await time.increaseTo(time.duration.seconds(_endTime+1))
       // call unfreeze will succeed
       await dao.unfreeze(_f_right_id, {from: owner})
-      // call revokeI will fail
-      await dao.revokeI(12, {from: owner})
+      // call revokeI will succeed
+      await dao.revokeI(13, {from: owner})
     })
   })
 
