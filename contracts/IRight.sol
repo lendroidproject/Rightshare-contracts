@@ -2,21 +2,23 @@ pragma solidity 0.5.11;
 
 import "./Right.sol";
 
-/**
- * @title IRight
- * IRight - a contract for NFT exclusive / non-exclusive Rights.
- */
-contract IRight is Right {
 
+/** @title IRight
+  * @author Lendroid Foundation
+  * @notice A smart contract for Interim Rights
+  * @dev Tested with 100% branch coverage. Pending audit certificate.
+  */
+contract IRight is Right {
+  // This stores metadata about a IRight token
   struct Metadata {
-    uint256 version;
-    uint256 parentId;
-    uint256 tokenId;
-    uint256 startTime;
-    uint256 endTime;
-    address baseAssetAddress;
-    uint256 baseAssetId;
-    bool isExclusive;
+    uint256 version; // version of the IRight
+    uint256 parentId; // id of the FRight
+    uint256 tokenId; // id of the IRight
+    uint256 startTime; // timestamp when the IRight was created
+    uint256 endTime; // timestamp until when the IRight is deemed useful
+    address baseAssetAddress; // address of original NFT locked in the DAO
+    uint256 baseAssetId; // id of original NFT locked in the DAO
+    bool isExclusive; // indicates if the IRight is exclusive, aka, is the only IRight for the FRight
   }
 
   // stores a `Metadata` struct for each IRight.
@@ -25,7 +27,14 @@ contract IRight is Right {
   constructor() TradeableERC721Token("IRight Token", "IRT", address(0)) public {}
 
   /**
-    * @dev updates token metadata
+    * @notice Adds metadata about a IRight Token
+    * @param version : uint256 representing the version of the IRight
+    * @param parentId : uint256 representing the id of the FRight
+    * @param startTime : uint256 creation timestamp of the IRight
+    * @param endTime : uint256 expiry timestamp of the IRight
+    * @param baseAssetAddress : address of original NFT
+    * @param baseAssetId : id of original NFT
+    * @param isExclusive : bool indicating exclusivity of IRight
     */
   function _updateMetadata(uint256 version, uint256 parentId, uint256 startTime, uint256 endTime, address baseAssetAddress, uint256 baseAssetId, bool isExclusive) private  {
     Metadata storage _meta = metadata[currentTokenId()];
@@ -40,10 +49,11 @@ contract IRight is Right {
   }
 
   /**
-    * @dev Mint IRight Token and update metadata
+    * @notice Creates a new IRight Token
+    * @dev Mints IRight Token, and updates metadata & currentTokenId
     * @param addresses : address array [_to, baseAssetAddress]
-    * @param values : uint256 array [parentId, endTime, baseAssetId, version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
+    * @param values : uint256 array [endTime, baseAssetId, maxISupply, version]
     */
   function issue(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner {
     require(addresses[1].isContract(), "invalid base asset address");
@@ -55,6 +65,12 @@ contract IRight is Right {
     _updateMetadata(values[3], values[0], now, values[1], addresses[1], values[2], isExclusive);
   }
 
+  /**
+    * @notice Revokes a IRight
+    * @dev Deletes the metadata and burns the IRight token
+    * @param from : address of the IRight owner
+    * @param tokenId : uint256 representing the IRight id
+    */
   function revoke(address from, uint256 tokenId) external onlyOwner {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
@@ -63,6 +79,12 @@ contract IRight is Right {
     _burn(from, tokenId);
   }
 
+  /**
+    * @notice Displays the api uri of a IRight token
+    * @dev Reconstructs the uri from the FRight metadata
+    * @param tokenId : uint256 representing the IRight id
+    * @return string : api uri
+    */
   function tokenURI(uint256 tokenId) external view returns (string memory) {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
@@ -79,6 +101,11 @@ contract IRight is Right {
     );
   }
 
+  /**
+    * @notice Displays the FRight id of a IRight token
+    * @param tokenId : uint256 representing the FRight id
+    * @return uint256 : parentId from the IRights metadata
+    */
   function parentId(uint256 tokenId) external view returns (uint256) {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
@@ -86,6 +113,12 @@ contract IRight is Right {
     return _meta.parentId;
   }
 
+  /**
+    * @notice Displays information about the original NFT of a IRight token
+    * @param tokenId : uint256 representing the IRight id
+    * @return baseAssetAddress : address of original NFT
+    * @return baseAssetId : id of original NFT
+    */
   function baseAsset(uint256 tokenId) external view returns (address baseAssetAddress, uint256 baseAssetId) {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];

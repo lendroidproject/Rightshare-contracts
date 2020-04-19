@@ -10,6 +10,11 @@ import "./FRight.sol";
 import "./IRight.sol";
 
 
+/** @title RightsDao
+ * @author Lendroid Foundation
+ * @notice DAO that handles NFTs, FRights, and IRights
+ * @dev Tested with 100% branch coverage. Pending audit certificate.
+ */
 contract RightsDao is Ownable, IERC721Receiver {
 
   using Address for address;
@@ -18,13 +23,18 @@ contract RightsDao is Ownable, IERC721Receiver {
   int128 constant CONTRACT_TYPE_RIGHT_F = 1;
   int128 constant CONTRACT_TYPE_RIGHT_I = 2;
 
+  // stores contract addresses of FRight and IRight
   mapping(int128 => address) public contracts;
 
+  // stores addresses that have been whitelisted to perform freeze calls
   mapping(address => bool) public isWhitelisted;
 
+  // stores whether freeze calls require caller to be whitelisted
   bool public whitelistedFreezeActivated = true;
 
+  // stores latest current version of FRight
   uint256 public currentFVersion = 1;
+  // stores latest current version of IRight
   uint256 public currentIVersion = 1;
 
   constructor(address fRightContractAddress, address iRightContractAddress) public {
@@ -34,15 +44,14 @@ contract RightsDao is Ownable, IERC721Receiver {
     contracts[CONTRACT_TYPE_RIGHT_I] = iRightContractAddress;
   }
 
-
   function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
     return this.onERC721Received.selector;
   }
 
-
   /**
+    * @notice Internal function to record if freeze calls must be made only by whitelisted accounts
     * @dev set whitelistedFreezeActivated value as true or false
-    * @param activate toggle value
+    * @param activate : bool indicating the toggle value
     */
   function _toggleWhitelistedFreeze(bool activate) internal {
     if (activate) {
@@ -54,8 +63,8 @@ contract RightsDao is Ownable, IERC721Receiver {
     whitelistedFreezeActivated = activate;
   }
 
-
   /**
+    * @notice Allows the owner to specify that freeze calls require sender to be whitelisted
     * @dev set whitelistedFreezeActivated value as true
     */
   function activateWhitelistedFreeze() external onlyOwner returns (bool) {
@@ -63,20 +72,20 @@ contract RightsDao is Ownable, IERC721Receiver {
     return true;
   }
 
-
   /**
-    * @dev set whitelistedFreezeActivated value as false
+    * @notice Allows the owner to specify that freeze calls do not require sender to be whitelisted
+    * @dev set whitelistedFreezeActivated value as true
     */
   function deactivateWhitelistedFreeze() external onlyOwner returns (bool) {
     _toggleWhitelistedFreeze(false);
     return true;
   }
 
-
   /**
-    * @dev add / remove given address to / from whitelist
-    * @param addr given address
-    * @param status whitelist status of given address
+    * @notice Allows owner to add / remove given address to / from whitelist
+    * @param addr : given address
+    * @param status : bool indicating whitelist status of given address
+    * @return bool : indicating the whitelist status has been set
     */
   function toggleWhitelistStatus(address addr, bool status) external onlyOwner returns (bool) {
     require(addr != address(0), "invalid address");
@@ -84,9 +93,10 @@ contract RightsDao is Ownable, IERC721Receiver {
     return true;
   }
 
-
   /**
-    * @dev Increment current f version
+    * @notice Allows owner to increment the current f version
+    * @dev Increment currentFVersion by 1
+    * @return bool : indicating the current f version has been incremented
     */
   function incrementCurrentFVersion() external onlyOwner returns (bool) {
     currentFVersion = currentFVersion.add(1);
@@ -94,18 +104,21 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Increment current i version
+    * @notice Allows owner to increment the current i version
+    * @dev Increment currentIVersion by 1
+    * @return bool : indicating the current i version has been incremented
     */
   function incrementCurrentIVersion() external onlyOwner returns (bool) {
     currentIVersion = currentIVersion.add(1);
     return true;
   }
 
-
   /**
+    * @notice Allows owner to set the base api url of F or I Right token
     * @dev Set base url of the server API representing the metadata of a Right Token
     * @param rightType type of Right contract
     * @param url API base url
+    * @return bool : indicating the base api url of the Right token has been set
     */
   function setRightApiBaseUrl(int128 rightType, string calldata url) external onlyOwner returns (bool) {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
@@ -119,9 +132,11 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Transfer ownership of the Right contract.
+    * @notice Allows owner to set the proxy registry address of F or I Right token
+    * @dev Set proxy registry address of the Right Token
     * @param rightType type of Right contract
     * @param proxyRegistryAddress address of the Right's Proxy Registry
+    * @return bool : indicating the proxy registry address of the Right token has been set
     */
   function setRightProxyRegistry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool) {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
@@ -135,12 +150,14 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Freeze a given ERC721 Token
-    * @param baseAssetAddress address of the ERC721 Token
-    * @param baseAssetId id of the ERC721 Token
-    * @param expiry timestamp until which the ERC721 Token is locked in the dao
-    * @param isExclusive exclusivity of IRights for the ERC721 Token
-    * @param values uint256 array [maxISupply, f_version, i_version]
+    * @notice Freezes a given NFT Token
+    * @dev Send the NFT to this contract, mint 1 FRight Token and 1 IRight Token
+    * @param baseAssetAddress : address of the NFT
+    * @param baseAssetId : id of the NFT
+    * @param expiry : timestamp until which the NFT is locked in the dao
+    * @param isExclusive : exclusivity of IRights for the NFT
+    * @param values : uint256 array [maxISupply, f_version, i_version]
+    * @return bool : indicating the given NFT has been frozen
     */
   function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool) {
     if (whitelistedFreezeActivated) {
@@ -157,8 +174,10 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Mint an IRight token for a given FRight token Id
-    * @param values uint256 array [fRightId, expiry, i_version]
+    * @notice Issues a IRight for a given FRight
+    * @dev Check if IRight can be minted, Mint 1 IRight, Increment FRight.circulatingISupply by 1
+    * @param values : uint256 array [fRightId, expiry, i_version]
+    * @return bool : indicating 1 IRight was successfully issued
     */
   function issueI(uint256[3] calldata values) external returns (bool) {
     require(values[1] > block.timestamp, "expiry should be in the future");
@@ -174,8 +193,10 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Burn an IRight token for a given IRight token Id
-    * @param iRightId id of the IRight Token
+    * @notice Revokes a given IRight. The IRight can be revoked at any time.
+    * @dev Burn the IRight token. If the corresponding FRight exists, decrement its circulatingISupply by 1
+    * @param iRightId : id of the IRight token
+    * @return bool : indicating the IRight was successfully revoked
     */
   function revokeI(uint256 iRightId) external returns (bool) {
     require(msg.sender == IRight(contracts[CONTRACT_TYPE_RIGHT_I]).ownerOf(iRightId), "sender is not the owner of iRight");
@@ -190,8 +211,10 @@ contract RightsDao is Ownable, IERC721Receiver {
   }
 
   /**
-    * @dev Burn an FRight token for a given FRight token Id, and return the original nft back to the user
-    * @param fRightId id of the FRight Token
+    * @notice Unfreezes a given FRight. The FRight can be unfrozen if either it has expired or it has nil issued IRights
+    * @dev Burn the FRight token for a given token Id, and return the original NFT back to the caller
+    * @param fRightId : id of the FRight token
+    * @return bool : indicating the FRight was successfully unfrozen
     */
   function unfreeze(uint256 fRightId) external returns (bool) {
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isUnfreezable(fRightId), "fRight is unfreezable");
