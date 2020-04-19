@@ -120,6 +120,14 @@ contract("RightsDao", (accounts) => {
       assert.equal(false, await dao.isWhitelisted(accounts[1]), "incorrect whitelist status")
     })
 
+    it('fails when trying to whitelist ZERO_ADDRESS', async () => {
+      // call when addr = ZERO_ADDRESS will revert
+      await expectRevert(
+        dao.toggleWhitelistStatus(ZERO_ADDRESS, true, {from: owner}),
+        'invalid address',
+      )
+    })
+
   })
 
 
