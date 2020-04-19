@@ -49,8 +49,7 @@ contract FRight is Right {
     * @param values : uint256 array [endTime, baseAssetId, maxISupply, version]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
     */
-  function freeze(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner returns (uint256 rightId) {
-    rightId = 0;
+  function freeze(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner returns (uint256) {
     require(addresses[1].isContract(), "invalid base asset address");
     require(values[0] > block.timestamp, "invalid expiry");
     require(values[1] > 0, "invalid base asset id");
@@ -65,7 +64,7 @@ contract FRight is Right {
     }
     mintTo(addresses[0]);
     _updateMetadata(values[3], now, values[0], addresses[1], values[1], isExclusive, values[2], 1);
-    rightId = currentTokenId();
+    return currentTokenId();
   }
 
   function isUnfreezable(uint256 tokenId) public view returns (bool) {
@@ -135,11 +134,10 @@ contract FRight is Right {
     return false;
   }
 
-  function endTimeAndMaxSupply(uint256 tokenId) external view returns (uint256 endTime, uint256 maxISupply) {
+  function endTime(uint256 tokenId) external view returns (uint256) {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "FRT: token does not exist");
-    endTime = _meta.endTime;
-    maxISupply = _meta.maxISupply;
+    return _meta.endTime;
   }
 }

@@ -1,7 +1,7 @@
 const { expectRevert } = require('@openzeppelin/test-helpers')
 
 
-contract("TradeableERC721Token", (accounts) => {
+contract("ProxyRegistry", (accounts) => {
 
   const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
   const OwnableDelegateProxy = artifacts.require("OwnableDelegateProxy")

@@ -81,23 +81,20 @@ contract("FRight", (accounts) => {
       assert.equal(result[1], _baseAssetId, "_baseAssetId cannot be 0.")
     })
 
-    it('updates endTimeAndMaxSupply', async () => {
-      result = await fRight.endTimeAndMaxSupply(1)
+    it('updates endTime', async () => {
       // Confirm _endTime
-      assert.equal(result[0], _endTime, "_endTime is invalid.")
-      // Confirm _maxISupply
-      assert.equal(result[1], _maxISupply, "_maxISupply is invalid.")
+      assert.equal(await fRight.endTime(1), _endTime, "_endTime is invalid.")
     })
 
     it('should decrement CirculatingISupply', async () => {
-      result = await fRight.endTimeAndMaxSupply(1)
+      result = await fRight.metadata(1)
       // Confirm _maxISupply
-      assert.equal(result[1], 1, "_maxISupply is invalid.")
+      assert.equal(result[7], 1, "_maxISupply is invalid.")
       // Decrement circulatingISupply, which also decrements maxISupply
       await fRight.decrementCirculatingISupply(1, 1, {from: owner})
-      result = await fRight.endTimeAndMaxSupply(1)
+      result = await fRight.metadata(1)
       // Confirm _maxISupply
-      assert.equal(result[1], 0, "_maxISupply is invalid.")
+      assert.equal(result[7], 0, "_maxISupply is invalid.")
       // Decrement again will revert
       await expectRevert(
         fRight.decrementCirculatingISupply(1, 1, {from: owner}),
@@ -136,9 +133,9 @@ contract("FRight", (accounts) => {
     })
 
     it('should not increment CirculatingISupply', async () => {
-      result = await fRight.endTimeAndMaxSupply(2)
+      result = await fRight.metadata(2)
       // Confirm _maxISupply
-      assert.equal(result[1], 1, "_maxISupply is invalid.")
+      assert.equal(result[7], 1, "_maxISupply is invalid.")
       // Increment will revert
       await expectRevert(
         fRight.incrementCirculatingISupply(2, 1, {from: owner}),
@@ -175,25 +172,28 @@ contract("FRight", (accounts) => {
     })
 
     it('should increment CirculatingISupply', async () => {
-      result = await fRight.endTimeAndMaxSupply(3)
+      result = await fRight.metadata(3)
       // Confirm _maxISupply
-      assert.equal(result[1], 3, "_maxISupply is invalid.")
+      assert.equal(result[7], 3, "_maxISupply is invalid.")
       // Increment CirculatingISupply
       await fRight.incrementCirculatingISupply(3, 1, {from: owner});
-      result = await fRight.endTimeAndMaxSupply(3)
+      result = await fRight.metadata(3)
       // Confirm _maxISupply
-      assert.equal(result[1], 3, "_maxISupply is invalid.")
+      assert.equal(result[7], 3, "_maxISupply is invalid.")
       // Increment CirculatingISupply
       await fRight.incrementCirculatingISupply(3, 1, {from: owner});
-      result = await fRight.endTimeAndMaxSupply(3)
+      result = await fRight.metadata(3)
       // Confirm _maxISupply
-      assert.equal(result[1], 3, "_maxISupply is invalid.")
+      assert.equal(result[7], 3, "_maxISupply is invalid.")
+      // Call to isIMintAble returns false
+      assert.equal(await fRight.isIMintAble(3), false, "isIMintAble should be false.")
       // Increment will revert
       await expectRevert(
         fRight.incrementCirculatingISupply(3, 1, {from: owner}),
         'Circulating I Supply cannot be incremented',
       )
     })
+
   })
 
   describe('freeze : reverts', () => {
@@ -343,9 +343,9 @@ contract("FRight", (accounts) => {
     it('should pass when circulatingISupply is 0', async () => {
       // Decrement circulatingISupply, which also decrements maxISupply
       await fRight.decrementCirculatingISupply(5, 1, {from: owner})
-      result = await fRight.endTimeAndMaxSupply(5)
+      result = await fRight.metadata(5)
       // Confirm _maxISupply
-      assert.equal(result[1], 0, "_maxISupply is invalid.")
+      assert.equal(result[7], 0, "_maxISupply is invalid.")
       // Call unfreeze fails for incorrect fRight token owner
       await expectRevert(
         fRight.unfreeze(owner, 5, {from: owner}),
@@ -438,16 +438,16 @@ contract("FRight", (accounts) => {
       )
     })
 
-    it('endTimeAndMaxSupply fails', async () => {
-      // Call endTimeAndMaxSupply
+    it('endTime fails', async () => {
+      // Call endTime
       await expectRevert(
-        fRight.endTimeAndMaxSupply(8),
+        fRight.endTime(8),
         'FRT: token does not exist',
       )
 
-      // Call endTimeAndMaxSupply with tokenId = 0
+      // Call endTime with tokenId = 0
       await expectRevert(
-        fRight.endTimeAndMaxSupply(0),
+        fRight.endTime(0),
         'invalid token id',
       )
     })

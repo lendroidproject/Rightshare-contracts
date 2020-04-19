@@ -79,7 +79,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param status whitelist status of given address
     */
   function toggleWhitelistStatus(address addr, bool status) external onlyOwner returns (bool) {
-    require(addr != address(0));
+    require(addr != address(0), "invalid address");
     isWhitelisted[addr] = status;
     return true;
   }
@@ -151,7 +151,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     require((values[1] > 0) && (values[1] <= currentFVersion), "invalid f version");
     require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
     uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
-    require(fRightId != 0, "freeze unsuccessful");
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
     return true;
@@ -166,8 +165,7 @@ contract RightsDao is Ownable, IERC721Receiver {
     require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]), "cannot mint iRight");
     require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]), "sender is not the owner of fRight");
-    (uint256 fEndTime, uint256 fMaxISupply) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTimeAndMaxSupply(values[0]);
-    require(fMaxISupply > 0, "maximum I supply is zero");
+    uint256 fEndTime = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTime(values[0]);
     require(values[1] <= fEndTime, "expiry cannot exceed fRight expiry");
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(values[0]);
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [values[0], values[1], baseAssetId, values[2]]);
@@ -185,7 +183,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     bool isBaseAssetFrozen = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isFrozen(baseAssetAddress, baseAssetId);
     if (isBaseAssetFrozen) {
       uint256 fRightId = IRight(contracts[CONTRACT_TYPE_RIGHT_I]).parentId(iRightId);
-      require(fRightId != 0, "invalid fRight parent");
       FRight(contracts[CONTRACT_TYPE_RIGHT_F]).decrementCirculatingISupply(fRightId, 1);
     }
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).revoke(msg.sender, iRightId);
