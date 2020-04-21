@@ -127,7 +127,7 @@ contract("FRight", (accounts) => {
 
     it('reverts when IMintAble is called', async () => {
       await expectRevert(
-        fRight.isIMintAble(2),
+        fRight.isIMintable(2),
         'cannot mint exclusive iRight',
       )
     })
@@ -168,7 +168,7 @@ contract("FRight", (accounts) => {
 
     it('IMintAble is true', async () => {
       // Confirm FRight is not IMintAble
-      assert.equal(await fRight.isIMintAble(3), true, "fRight should be IMintAble.")
+      assert.equal(await fRight.isIMintable(3), true, "fRight should be IMintAble.")
     })
 
     it('should increment CirculatingISupply', async () => {
@@ -185,8 +185,8 @@ contract("FRight", (accounts) => {
       result = await fRight.metadata(3)
       // Confirm _maxISupply
       assert.equal(result[7], 3, "_maxISupply is invalid.")
-      // Call to isIMintAble returns false
-      assert.equal(await fRight.isIMintAble(3), false, "isIMintAble should be false.")
+      // Call to isIMintable returns false
+      assert.equal(await fRight.isIMintable(3), false, "isIMintable should be false.")
       // Increment will revert
       await expectRevert(
         fRight.incrementCirculatingISupply(3, 1, {from: owner}),
@@ -415,16 +415,16 @@ contract("FRight", (accounts) => {
       )
     })
 
-    it('isIMintAble fails', async () => {
-      // Call isIMintAble
+    it('isIMintable fails', async () => {
+      // Call isIMintable
       await expectRevert(
-        fRight.isIMintAble(8),
+        fRight.isIMintable(8),
         'FRT: token does not exist',
       )
 
-      // Call isIMintAble with tokenId = 0
+      // Call isIMintable with tokenId = 0
       await expectRevert(
-        fRight.isIMintAble(0),
+        fRight.isIMintable(0),
         'invalid token id',
       )
     })

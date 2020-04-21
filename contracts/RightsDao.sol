@@ -183,7 +183,7 @@ contract RightsDao is Ownable, IERC721Receiver {
   function issueI(uint256[3] calldata values) external returns (bool) {
     require(values[1] > block.timestamp, "expiry should be in the future");
     require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
-    require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintAble(values[0]), "cannot mint iRight");
+    require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintable(values[0]), "cannot mint iRight");
     require(msg.sender == FRight(contracts[CONTRACT_TYPE_RIGHT_F]).ownerOf(values[0]), "sender is not the owner of fRight");
     uint256 fEndTime = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).endTime(values[0]);
     require(values[1] <= fEndTime, "expiry cannot exceed fRight expiry");

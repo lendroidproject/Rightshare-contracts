@@ -178,7 +178,7 @@ contract FRight is Right {
     * @param tokenId : uint256 representing the FRight id
     * @return bool : indicating if a IRight can be minted
     */
-  function isIMintAble(uint256 tokenId) external view returns (bool) {
+  function isIMintable(uint256 tokenId) external view returns (bool) {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "FRT: token does not exist");
