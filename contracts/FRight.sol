@@ -99,6 +99,7 @@ contract FRight is Right {
     */
   function unfreeze(address from, uint256 tokenId) external onlyOwner {
     require(isUnfreezable(tokenId), "FRT: token is not unfreezable");
+    require(from != address(0), "from address cannot be zero");
     delete isFrozen[metadata[tokenId].baseAssetAddress][metadata[tokenId].baseAssetId];
     delete metadata[tokenId];
     _burn(from, tokenId);
@@ -135,6 +136,7 @@ contract FRight is Right {
     */
   function incrementCirculatingISupply(uint256 tokenId, uint256 amount) external onlyOwner {
     require(tokenId > 0, "invalid token id");
+    require(amount > 0, "amount cannot be zero");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "FRT: token does not exist");
     require(_meta.maxISupply.sub(_meta.circulatingISupply) >= amount, "Circulating I Supply cannot be incremented");
@@ -149,6 +151,7 @@ contract FRight is Right {
     */
   function decrementCirculatingISupply(uint256 tokenId, uint256 amount) external onlyOwner {
     require(tokenId > 0, "invalid token id");
+    require(amount > 0, "amount cannot be zero");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "FRT: token does not exist");
     require(_meta.maxISupply.sub(amount) >= _meta.circulatingISupply.sub(amount), "invalid amount");

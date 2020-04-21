@@ -73,6 +73,7 @@ contract IRight is Right {
     */
   function revoke(address from, uint256 tokenId) external onlyOwner {
     require(tokenId > 0, "invalid token id");
+    require(from != address(0), "from address cannot be zero");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "IRT: token does not exist");
     delete metadata[tokenId];

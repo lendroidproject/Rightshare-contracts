@@ -215,6 +215,14 @@ contract("IRight", (accounts) => {
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
 
+    it('should fail when from address is ZERO_ADDRESS', async () => {
+      // Call revoke will fail
+      await expectRevert(
+        iRight.revoke(ZERO_ADDRESS, 4, {from: owner}),
+        'from address cannot be zero',
+      )
+    })
+
     it('should pass when token exists', async () => {
       // Call revoke fails for incorrect iRight token owner
       await expectRevert(

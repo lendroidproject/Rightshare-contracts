@@ -351,6 +351,11 @@ contract("FRight", (accounts) => {
         fRight.unfreeze(owner, 5, {from: owner}),
         'ERC721: burn of token that is not own',
       )
+      // Call unfreeze with from address = ZERO_ADDRESS will fail
+      await expectRevert(
+        fRight.unfreeze(ZERO_ADDRESS, 5, {from: owner}),
+        'from address cannot be zero',
+      )
       // Call unfreeze
       await fRight.unfreeze(accounts[1], 5, {from: owner})
     })
@@ -464,6 +469,12 @@ contract("FRight", (accounts) => {
         fRight.incrementCirculatingISupply(0, 1, {from: owner}),
         'invalid token id',
       )
+
+      // Call incrementCirculatingISupply with amount = 0
+      await expectRevert(
+        fRight.incrementCirculatingISupply(7, 0, {from: owner}),
+        'amount cannot be zero',
+      )
     })
 
     it('decrementCirculatingISupply fails', async () => {
@@ -477,6 +488,12 @@ contract("FRight", (accounts) => {
       await expectRevert(
         fRight.decrementCirculatingISupply(0, 1, {from: owner}),
         'invalid token id',
+      )
+
+      // Call decrementCirculatingISupply with amount = 0
+      await expectRevert(
+        fRight.decrementCirculatingISupply(7, 0, {from: owner}),
+        'amount cannot be zero',
       )
     })
   })
