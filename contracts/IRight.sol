@@ -53,7 +53,7 @@ contract IRight is Right {
     * @dev Mints IRight Token, and updates metadata & currentTokenId
     * @param addresses : address array [_to, baseAssetAddress]
     * @param isExclusive : boolean indicating exclusivity of the FRight Token
-    * @param values : uint256 array [endTime, baseAssetId, maxISupply, version]
+    * @param values : uint256 array [parentId, endTime, baseAssetId, version]
     */
   function issue(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner {
     require(addresses[1].isContract(), "invalid base asset address");

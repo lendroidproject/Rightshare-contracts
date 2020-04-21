@@ -155,11 +155,10 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param baseAssetAddress : address of the NFT
     * @param baseAssetId : id of the NFT
     * @param expiry : timestamp until which the NFT is locked in the dao
-    * @param isExclusive : exclusivity of IRights for the NFT
     * @param values : uint256 array [maxISupply, f_version, i_version]
     * @return bool : indicating the given NFT has been frozen
     */
-  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, bool isExclusive, uint256[3] calldata values) external returns (bool) {
+  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, uint256[3] calldata values) external returns (bool) {
     if (whitelistedFreezeActivated) {
       require(isWhitelisted[msg.sender], "sender is not whitelisted");
     }
@@ -167,6 +166,8 @@ contract RightsDao is Ownable, IERC721Receiver {
     require(expiry > block.timestamp, "expiry should be in the future");
     require((values[1] > 0) && (values[1] <= currentFVersion), "invalid f version");
     require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
+    // set exclusivity of IRights for the NFT
+    bool isExclusive = values[0] == 1;
     uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
