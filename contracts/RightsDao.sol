@@ -166,9 +166,9 @@ contract RightsDao is Ownable, IERC721Receiver {
     require(expiry > block.timestamp, "expiry should be in the future");
     require((values[1] > 0) && (values[1] <= currentFVersion), "invalid f version");
     require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
+    uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], [expiry, baseAssetId, values[0], values[1]]);
     // set exclusivity of IRights for the NFT
     bool isExclusive = values[0] == 1;
-    uint256 fRightId = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).freeze([msg.sender, baseAssetAddress], isExclusive, [expiry, baseAssetId, values[0], values[1]]);
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
     return true;

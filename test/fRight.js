@@ -41,7 +41,7 @@ contract("FRight", (accounts) => {
   })
 
   describe('freeze : all rights', () => {
-    let _to, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+    let _to, _endTime, _baseAssetAddress, _baseAssetId, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -50,12 +50,11 @@ contract("FRight", (accounts) => {
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 1
-      _isExclusive = true
       _maxISupply = 1
       // Confirm FRight currentTokenId is 0
       assert.equal(await fRight.currentTokenId(), 0, "currentTokenId is not 0.")
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
     it('mints fRight token to accounts[1]', async () => {
@@ -104,7 +103,7 @@ contract("FRight", (accounts) => {
   })
 
   describe('freeze : exclusive rights', () => {
-    let _to, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+    let _to, _endTime, _baseAssetAddress, _baseAssetId, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -113,10 +112,9 @@ contract("FRight", (accounts) => {
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 2
-      _isExclusive = true
       _maxISupply = 1
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
     it('updates the tokenURI', async () => {
@@ -145,7 +143,7 @@ contract("FRight", (accounts) => {
   })
 
   describe('freeze : non exclusive rights', () => {
-    let _to, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+    let _to, _endTime, _baseAssetAddress, _baseAssetId, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -154,10 +152,9 @@ contract("FRight", (accounts) => {
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 3
-      _isExclusive = false
       _maxISupply = 3
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
     it('updates the tokenURI', async () => {
@@ -197,7 +194,7 @@ contract("FRight", (accounts) => {
   })
 
   describe('freeze : reverts', () => {
-    let _to, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+    let _to, _endTime, _baseAssetAddress, _baseAssetId, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -206,14 +203,13 @@ contract("FRight", (accounts) => {
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 4
-      _isExclusive = true
       _maxISupply = 1
     })
 
     it('fails when called by non-owner', async () => {
       // Call freeze when expiry = 0
       await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: accounts[1]}),
+        fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: accounts[1]}),
         'caller is not the owner',
       )
 
@@ -222,13 +218,13 @@ contract("FRight", (accounts) => {
     it('fails when base asset address is not a contract', async () => {
       // Call freeze when base asset address is zero address
       await expectRevert(
-        fRight.freeze([_to, ZERO_ADDRESS], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
+        fRight.freeze([_to, ZERO_ADDRESS], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
         'invalid base asset address',
       )
 
       // Call freeze when base asset address is non-zero, and not a contract address
       await expectRevert(
-        fRight.freeze([_to, accounts[1]], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
+        fRight.freeze([_to, accounts[1]], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
         'invalid base asset address',
       )
 
@@ -237,7 +233,7 @@ contract("FRight", (accounts) => {
     it('fails when expiry is invalid', async () => {
       // Call freeze when expiry = 0
       await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [0, _baseAssetId, _maxISupply, 1], {from: owner}),
+        fRight.freeze([_to, _baseAssetAddress], [0, _baseAssetId, _maxISupply, 1], {from: owner}),
         'invalid expiry',
       )
 
@@ -246,7 +242,7 @@ contract("FRight", (accounts) => {
     it('fails when base asset id is invalid', async () => {
       // Call freeze when base asset id = 0
       await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, 0, _maxISupply, 1], {from: owner}),
+        fRight.freeze([_to, _baseAssetAddress], [_endTime, 0, _maxISupply, 1], {from: owner}),
         'invalid base asset id',
       )
 
@@ -255,54 +251,35 @@ contract("FRight", (accounts) => {
     it('fails when version is invalid', async () => {
       // Call freeze when version = 0
       await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 0], {from: owner}),
+        fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 0], {from: owner}),
         'invalid version',
       )
 
     })
 
 
-    it('fails when _maxISupply is invalid', async () => {
-      // Call freeze when _maxISupply = 0 for excluisve freeze
+    it('fails when _maxISupply is zero', async () => {
+      // Call freeze when _maxISupply = 0
       await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], true, [_endTime, _baseAssetId, 0, 1], {from: owner}),
+        fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, 0, 1], {from: owner}),
         'invalid maximum I supply',
       )
-
-      // Call freeze when _maxISupply = 0 for non-excluisve freeze
-      await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], false, [_endTime, _baseAssetId, 0, 1], {from: owner}),
-        'invalid maximum I supply',
-      )
-
-      // Call freeze when _maxISupply > 1 for excluisve freeze
-      await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], true, [_endTime, _baseAssetId, 2, 1], {from: owner}),
-        'invalid maximum I supply',
-      )
-
-      // Call freeze when _maxISupply = 1 for non-excluisve freeze
-      await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], false, [_endTime, _baseAssetId, 1, 1], {from: owner}),
-        'invalid maximum I supply',
-      )
-
     })
 
 
     it('fails when called again', async () => {
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
       // Call freeze again
       await expectRevert(
-        fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
+        fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner}),
         'Asset is already frozen',
       )
     })
   })
 
   describe('unfreeze', () => {
-    let _to, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+    let _to, _endTime, _baseAssetAddress, _baseAssetId, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -311,10 +288,9 @@ contract("FRight", (accounts) => {
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 5
-      _isExclusive = true
       _maxISupply = 1
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
     it('fails when called by non-owner', async () => {
@@ -362,7 +338,7 @@ contract("FRight", (accounts) => {
 
     it('should fail when unfreezable', async () => {
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
       // Call unfreeze will fail
       await expectRevert(
         fRight.unfreeze(accounts[1], 6, {from: owner}),
@@ -372,7 +348,7 @@ contract("FRight", (accounts) => {
   })
 
   describe('function calls with incorrect tokenId', () => {
-    let _to, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+    let _to, _endTime, _baseAssetAddress, _baseAssetId, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -381,10 +357,9 @@ contract("FRight", (accounts) => {
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
       _baseAssetId = 6
-      _isExclusive = true
       _maxISupply = 1
       // Call freeze
-      await fRight.freeze([_to, _baseAssetAddress], _isExclusive, [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
+      await fRight.freeze([_to, _baseAssetAddress], [_endTime, _baseAssetId, _maxISupply, 1], {from: owner})
     })
 
     it('tokenURI fails', async () => {
