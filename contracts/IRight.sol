@@ -6,7 +6,7 @@ import "./Right.sol";
 /** @title IRight
   * @author Lendroid Foundation
   * @notice A smart contract for Interim Rights
-  * @dev Tested with 100% branch coverage. Pending audit certificate.
+  * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
   */
 contract IRight is Right {
   // This stores metadata about a IRight token

@@ -8,6 +8,7 @@ import './Strings.sol';
 /**
  * @title OwnableDelegateProxy
  * @notice Proxy contract to act on behalf of a user account
+ * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
  */
 contract OwnableDelegateProxy { }
 

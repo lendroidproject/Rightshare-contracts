@@ -1,7 +1,11 @@
 pragma solidity 0.5.11;
 
+/**
+ * @title Strings
+ * @notice Library contract via https://github.com/oraclize/ethereum-api/blob/master/oraclizeAPI_0.5.sol
+ * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
+ */
 library Strings {
-  // via https://github.com/oraclize/ethereum-api/blob/master/oraclizeAPI_0.5.sol
   function strConcat(string memory a, string memory b, string memory c, string memory d, string memory e) internal pure returns (string memory) {
       bytes memory ba = bytes(a);
       bytes memory bb = bytes(b);

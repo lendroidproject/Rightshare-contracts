@@ -6,7 +6,7 @@ import "./Right.sol";
 /** @title FRight
   * @author Lendroid Foundation
   * @notice A smart contract for Frozen Rights
-  * @dev Tested with 100% branch coverage. Pending audit certificate.
+  * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
   */
 contract FRight is Right {
   // This stores metadata about a FRight token

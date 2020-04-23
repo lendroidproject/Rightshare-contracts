@@ -6,7 +6,7 @@ import "./TradeableERC721Token.sol";
 /** @title Right
  * @author Lendroid Foundation
  * @notice A smart contract for NFT Rights
- * @dev Tested with 100% branch coverage. Pending audit certificate.
+ * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
  */
 contract Right is TradeableERC721Token {
 

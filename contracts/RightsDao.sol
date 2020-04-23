@@ -13,7 +13,7 @@ import "./IRight.sol";
 /** @title RightsDao
  * @author Lendroid Foundation
  * @notice DAO that handles NFTs, FRights, and IRights
- * @dev Tested with 100% branch coverage. Pending audit certificate.
+ * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
  */
 contract RightsDao is Ownable, IERC721Receiver {
 
