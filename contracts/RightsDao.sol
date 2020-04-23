@@ -67,50 +67,42 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @notice Allows the owner to specify that freeze calls require sender to be whitelisted
     * @dev set whitelistedFreezeActivated value as true
     */
-  function activateWhitelistedFreeze() external onlyOwner returns (bool) {
+  function activateWhitelistedFreeze() external onlyOwner {
     _toggleWhitelistedFreeze(true);
-    return true;
   }
 
   /**
     * @notice Allows the owner to specify that freeze calls do not require sender to be whitelisted
     * @dev set whitelistedFreezeActivated value as true
     */
-  function deactivateWhitelistedFreeze() external onlyOwner returns (bool) {
+  function deactivateWhitelistedFreeze() external onlyOwner {
     _toggleWhitelistedFreeze(false);
-    return true;
   }
 
   /**
     * @notice Allows owner to add / remove given address to / from whitelist
     * @param addr : given address
     * @param status : bool indicating whitelist status of given address
-    * @return bool : indicating the whitelist status has been set
     */
-  function toggleWhitelistStatus(address addr, bool status) external onlyOwner returns (bool) {
+  function toggleWhitelistStatus(address addr, bool status) external onlyOwner {
     require(addr != address(0), "invalid address");
     isWhitelisted[addr] = status;
-    return true;
   }
 
   /**
     * @notice Allows owner to increment the current f version
     * @dev Increment currentFVersion by 1
-    * @return bool : indicating the current f version has been incremented
     */
-  function incrementCurrentFVersion() external onlyOwner returns (bool) {
+  function incrementCurrentFVersion() external onlyOwner {
     currentFVersion = currentFVersion.add(1);
-    return true;
   }
 
   /**
     * @notice Allows owner to increment the current i version
     * @dev Increment currentIVersion by 1
-    * @return bool : indicating the current i version has been incremented
     */
-  function incrementCurrentIVersion() external onlyOwner returns (bool) {
+  function incrementCurrentIVersion() external onlyOwner {
     currentIVersion = currentIVersion.add(1);
-    return true;
   }
 
   /**
@@ -118,9 +110,8 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @dev Set base url of the server API representing the metadata of a Right Token
     * @param rightType type of Right contract
     * @param url API base url
-    * @return bool : indicating the base api url of the Right token has been set
     */
-  function setRightApiBaseUrl(int128 rightType, string calldata url) external onlyOwner returns (bool) {
+  function setRightApiBaseUrl(int128 rightType, string calldata url) external onlyOwner {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setApiBaseUrl(url);
@@ -128,7 +119,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     else {
       IRight(contracts[rightType]).setApiBaseUrl(url);
     }
-    return true;
   }
 
   /**
@@ -136,9 +126,8 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @dev Set proxy registry address of the Right Token
     * @param rightType type of Right contract
     * @param proxyRegistryAddress address of the Right's Proxy Registry
-    * @return bool : indicating the proxy registry address of the Right token has been set
     */
-  function setRightProxyRegistry(int128 rightType, address proxyRegistryAddress) external onlyOwner returns (bool) {
+  function setRightProxyRegistry(int128 rightType, address proxyRegistryAddress) external onlyOwner {
     require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
     if (rightType == CONTRACT_TYPE_RIGHT_F) {
       FRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
@@ -146,7 +135,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     else {
       IRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
     }
-    return true;
   }
 
   /**
@@ -156,9 +144,8 @@ contract RightsDao is Ownable, IERC721Receiver {
     * @param baseAssetId : id of the NFT
     * @param expiry : timestamp until which the NFT is locked in the dao
     * @param values : uint256 array [maxISupply, f_version, i_version]
-    * @return bool : indicating the given NFT has been frozen
     */
-  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, uint256[3] calldata values) external returns (bool) {
+  function freeze(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, uint256[3] calldata values) external {
     if (whitelistedFreezeActivated) {
       require(isWhitelisted[msg.sender], "sender is not whitelisted");
     }
@@ -171,16 +158,14 @@ contract RightsDao is Ownable, IERC721Receiver {
     bool isExclusive = values[0] == 1;
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], isExclusive, [fRightId, expiry, baseAssetId, values[2]]);
     ERC721(baseAssetAddress).safeTransferFrom(msg.sender, address(this), baseAssetId);
-    return true;
   }
 
   /**
     * @notice Issues a IRight for a given FRight
     * @dev Check if IRight can be minted, Mint 1 IRight, Increment FRight.circulatingISupply by 1
     * @param values : uint256 array [fRightId, expiry, i_version]
-    * @return bool : indicating 1 IRight was successfully issued
     */
-  function issueI(uint256[3] calldata values) external returns (bool) {
+  function issueI(uint256[3] calldata values) external {
     require(values[1] > block.timestamp, "expiry should be in the future");
     require((values[2] > 0) && (values[2] <= currentIVersion), "invalid i version");
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isIMintable(values[0]), "cannot mint iRight");
@@ -190,16 +175,14 @@ contract RightsDao is Ownable, IERC721Receiver {
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(values[0]);
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [values[0], values[1], baseAssetId, values[2]]);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(values[0], 1);
-    return true;
   }
 
   /**
     * @notice Revokes a given IRight. The IRight can be revoked at any time.
     * @dev Burn the IRight token. If the corresponding FRight exists, decrement its circulatingISupply by 1
     * @param iRightId : id of the IRight token
-    * @return bool : indicating the IRight was successfully revoked
     */
-  function revokeI(uint256 iRightId) external returns (bool) {
+  function revokeI(uint256 iRightId) external {
     require(msg.sender == IRight(contracts[CONTRACT_TYPE_RIGHT_I]).ownerOf(iRightId), "sender is not the owner of iRight");
     (address baseAssetAddress, uint256 baseAssetId) = IRight(contracts[CONTRACT_TYPE_RIGHT_I]).baseAsset(iRightId);
     bool isBaseAssetFrozen = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isFrozen(baseAssetAddress, baseAssetId);
@@ -208,21 +191,18 @@ contract RightsDao is Ownable, IERC721Receiver {
       FRight(contracts[CONTRACT_TYPE_RIGHT_F]).decrementCirculatingISupply(fRightId, 1);
     }
     IRight(contracts[CONTRACT_TYPE_RIGHT_I]).revoke(msg.sender, iRightId);
-    return true;
   }
 
   /**
     * @notice Unfreezes a given FRight. The FRight can be unfrozen if either it has expired or it has nil issued IRights
     * @dev Burn the FRight token for a given token Id, and return the original NFT back to the caller
     * @param fRightId : id of the FRight token
-    * @return bool : indicating the FRight was successfully unfrozen
     */
-  function unfreeze(uint256 fRightId) external returns (bool) {
+  function unfreeze(uint256 fRightId) external {
     require(FRight(contracts[CONTRACT_TYPE_RIGHT_F]).isUnfreezable(fRightId), "fRight is unfreezable");
     (address baseAssetAddress, uint256 baseAssetId) = FRight(contracts[CONTRACT_TYPE_RIGHT_F]).baseAsset(fRightId);
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).unfreeze(msg.sender, fRightId);
     ERC721(baseAssetAddress).transferFrom(address(this), msg.sender, baseAssetId);
-    return true;
   }
 
 }
