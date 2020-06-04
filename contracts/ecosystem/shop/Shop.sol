@@ -9,6 +9,7 @@ import "../../RightsDao.sol";
 contract Shop is Ownable, IERC721Receiver {
 
     using Address for address;
+    using SafeMath for uint256;
 
     struct Item {
         uint256 id;
@@ -48,7 +49,7 @@ contract Shop is Ownable, IERC721Receiver {
     function list(address baseAssetAddress, uint256 baseAssetId, address fRightAddress, uint256 fRightId, uint256 maxSupply) external {
         bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
         require(hashToId[_hash] == 0, "Id with hash already exists");
-        lastId++;
+        lastId = lastId.add(1);
         hashToId[_hash] = lastId;
         idToHash[lastId] = _hash;
         items[_hash] = Item({
@@ -80,7 +81,7 @@ contract Shop is Ownable, IERC721Receiver {
         uint256 fRightId = items[hashToDelist].fRightId;
         delete items[hashToDelist];
         hashToId[hashToDelist] = 0;
-        lastId--;
+        lastId = lastId.sub(1);
         // fRight token is transferred to its owner
         FRight(fRightAddress).safeTransferFrom(address(this), fRightOwner, fRightId);
     }
@@ -88,7 +89,7 @@ contract Shop is Ownable, IERC721Receiver {
     function updateItemMaxSupply(address baseAssetAddress, uint256 baseAssetId, uint256 maxSupply) external {
          bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
          require(items[_hash].hash == _hash, "item does not exist");
-         require(items[_hash].totalSupply <= maxSupply);
+         require(maxSupply.sub(items[_hash].totalSupply) >= 0);
          items[_hash].maxSupply = maxSupply;
     }
 
@@ -104,7 +105,7 @@ contract Shop is Ownable, IERC721Receiver {
          if (!items[_hash].isActive) {
              return false;
          }
-        if (items[_hash].maxSupply <= items[_hash].totalSupply) {
+        if (items[_hash].maxSupply.sub(items[_hash].totalSupply) <= 0) {
             return false;
         }
         return true;
@@ -115,7 +116,7 @@ contract Shop is Ownable, IERC721Receiver {
          require(items[_hash].hash == _hash, "item does not exist");
          // update item
          require(isBuyable(baseAssetAddress, baseAssetId), "item is not buyable");
-         items[_hash].totalSupply ++;
+         items[_hash].totalSupply = items[_hash].totalSupply.add(1);
          // mint an i right to the msg.sender
          RightsDao(daoAddress).issueI([items[_hash].fRightId, expiry, iVersion]);
          // msg.value is routed to the payout contract address
