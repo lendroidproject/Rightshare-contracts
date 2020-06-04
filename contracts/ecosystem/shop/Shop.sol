@@ -3,11 +3,11 @@ pragma solidity 0.5.11;
 import "../../RightsDao.sol";
 
 /**
- * @title Shop edited from remixd
+ * @title Shop
  * @dev Implements REC Shop.sol
  */
 contract Shop is Ownable, IERC721Receiver {
-    
+
     using Address for address;
 
     struct Item {
@@ -88,6 +88,7 @@ contract Shop is Ownable, IERC721Receiver {
     function updateItemMaxSupply(address baseAssetAddress, uint256 baseAssetId, uint256 maxSupply) external {
          bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
          require(items[_hash].hash == _hash, "item does not exist");
+         require(items[_hash].totalSupply <= maxSupply);
          items[_hash].maxSupply = maxSupply;
     }
 
@@ -97,7 +98,7 @@ contract Shop is Ownable, IERC721Receiver {
          items[_hash].isActive = isActive;
     }
 
-    function isBuyable(address baseAssetAddress, uint256 baseAssetId) external view returns(bool) {
+    function isBuyable(address baseAssetAddress, uint256 baseAssetId) public view returns(bool) {
          bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
          require(items[_hash].hash == _hash, "item does not exist");
          if (!items[_hash].isActive) {
@@ -113,7 +114,7 @@ contract Shop is Ownable, IERC721Receiver {
          bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
          require(items[_hash].hash == _hash, "item does not exist");
          // update item
-         require(items[_hash].totalSupply < items[_hash].maxSupply);
+         require(isBuyable(baseAssetAddress, baseAssetId), "item is not buyable");
          items[_hash].totalSupply ++;
          // mint an i right to the msg.sender
          RightsDao(daoAddress).issueI([items[_hash].fRightId, expiry, iVersion]);
