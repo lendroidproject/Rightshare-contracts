@@ -24,6 +24,9 @@ contract IRight is Right {
   // stores a `Metadata` struct for each IRight.
   mapping(uint256 => Metadata) public metadata;
 
+  // [address][tokenAddress][tokenId] = tokens owned by address
+  mapping(address => mapping(address => mapping(uint256 => Counters.Counter))) public rights;
+
   constructor() TradeableERC721Token("IRight Token", "IRT", address(0)) public {}
 
   /**
@@ -61,8 +64,19 @@ contract IRight is Right {
     require(values[1] > block.timestamp, "invalid expiry");
     require(values[2] > 0, "invalid base asset id");
     require(values[3] > 0, "invalid version");
+    rights[addresses[0]][addresses[1]][values[2]].increment();
     mintTo(addresses[0]);
     _updateMetadata(values[3], values[0], now, values[1], addresses[1], values[2], isExclusive);
+  }
+
+  function _burn(address owner, uint256 tokenId) internal {
+    require(tokenId > 0, "invalid token id");
+    require(owner != address(0), "from address cannot be zero");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "IRT: token does not exist");
+    super._burn(owner, tokenId);
+    rights[owner][_meta.baseAssetAddress][_meta.baseAssetId].decrement();
+    delete metadata[tokenId];
   }
 
   /**
@@ -72,11 +86,6 @@ contract IRight is Right {
     * @param tokenId : uint256 representing the IRight id
     */
   function revoke(address from, uint256 tokenId) external onlyOwner {
-    require(tokenId > 0, "invalid token id");
-    require(from != address(0), "from address cannot be zero");
-    Metadata storage _meta = metadata[tokenId];
-    require(_meta.tokenId == tokenId, "IRT: token does not exist");
-    delete metadata[tokenId];
     _burn(from, tokenId);
   }
 
@@ -120,12 +129,31 @@ contract IRight is Right {
     * @return baseAssetAddress : address of original NFT
     * @return baseAssetId : id of original NFT
     */
-  function baseAsset(uint256 tokenId) external view returns (address baseAssetAddress, uint256 baseAssetId) {
+  function baseAsset(uint256 tokenId) public view returns (address baseAssetAddress, uint256 baseAssetId) {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "IRT: token does not exist");
     baseAssetAddress = _meta.baseAssetAddress;
     baseAssetId = _meta.baseAssetId;
+  }
+
+  function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {
+    require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
+    (address baseAssetAddress, uint256 baseAssetId) = baseAsset(tokenId);
+    rights[from][baseAssetAddress][baseAssetId].decrement();
+    rights[to][baseAssetAddress][baseAssetId].increment();
+    _safeTransferFrom(from, to, tokenId, _data);
+  }
+
+  function _transferFrom(address from, address to, uint256 tokenId) internal {
+    super._transferFrom(from, to, tokenId);
+    (address baseAssetAddress, uint256 baseAssetId) = baseAsset(tokenId);
+    rights[from][baseAssetAddress][baseAssetId].decrement();
+    rights[to][baseAssetAddress][baseAssetId].increment();
+  }
+
+  function hasRight(address who, address baseAssetAddress, uint256 baseAssetId) external view returns (bool) {
+    return rights[who][baseAssetAddress][baseAssetId].current() > 0;
   }
 
 }
