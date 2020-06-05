@@ -1,12 +1,12 @@
 pragma solidity 0.5.11;
 
 import "../../RightsDao.sol";
-
+import "./IShop.sol";
 /**
  * @title Shop
  * @dev Implements REC Shop.sol
  */
-contract Shop is Ownable, IERC721Receiver {
+contract Shop is Ownable, IERC721Receiver, IShop {
 
     using Address for address;
     using SafeMath for uint256;
