@@ -37,6 +37,11 @@ contract RightsDao is Ownable, IERC721Receiver {
   // stores latest current version of IRight
   uint256 public currentIVersion = 1;
 
+  // return value for safeTransferFrom function calls of older ERC721 versions
+  bytes4 constant ERC721_RECEIVED_OLD = 0xf0b9e5ba;
+  // return value for safeTransferFrom function calls of newer ERC721 versions
+  bytes4 constant ERC721_RECEIVED_NEW = 0x150b7a02;
+
   constructor(address fRightContractAddress, address iRightContractAddress) public {
     require(fRightContractAddress.isContract(), "invalid fRightContractAddress");
     require(iRightContractAddress.isContract(), "invalid iRightContractAddress");
@@ -44,8 +49,12 @@ contract RightsDao is Ownable, IERC721Receiver {
     contracts[CONTRACT_TYPE_RIGHT_I] = iRightContractAddress;
   }
 
+  function onERC721Received(address, uint256, bytes memory) public pure returns (bytes4) {
+    return ERC721_RECEIVED_OLD;
+  }
+
   function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
-    return this.onERC721Received.selector;
+    return ERC721_RECEIVED_NEW;
   }
 
   /**
