@@ -535,6 +535,35 @@ contract("RightsDao", (accounts) => {
     })
   })
 
+  describe('issueFAT', () => {
+    let _endTime, _baseAssetAddress, _baseAssetId, _maxISupply, currentTokenId
+
+    it('succeeds', async () => {
+      // deactivate whitelisted freeze
+      await dao.deactivateWhitelistedFreeze({from: owner})
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 7
+      _expiry = 1609459190
+      // Confirm counter is zero
+      assert.equal(await iRight.hasRight(owner, _baseAssetAddress, _baseAssetId), false, "hasRight() should return false.")
+      // Call issueFAT
+      await dao.issueFAT(_baseAssetAddress, _baseAssetId, _endTime, [1, 1], {from: owner})
+      // Confirm counter has been incremented
+      assert.equal(await iRight.hasRight(owner, _baseAssetAddress, _baseAssetId), true, "hasRight() should return true.")
+      assert.equal(13, await iRight.currentTokenId(), 'is wrong id value')
+      // activate whitelisted freeze
+      await dao.activateWhitelistedFreeze({from: owner})
+      // whitelist owner
+      await dao.toggleWhitelistStatus(owner, true, {from: owner})
+      // Call issueFAT
+      await dao.issueFAT(_baseAssetAddress, _baseAssetId, _endTime, [1, 1], {from: owner})
+      assert.equal(14, await iRight.currentTokenId(), 'is wrong id value')
+    })
+  })
+
   describe('unfreeze and iRevoke after expiry of rights', () => {
     let _endTime, _baseAssetAddress, _baseAssetId, _maxISupply, currentTokenId
 
@@ -545,12 +574,12 @@ contract("RightsDao", (accounts) => {
       await nft.mintTo(owner);
       _endTime = 1609459200
       _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
-      _baseAssetId = 7
+      _baseAssetId = 8
       _maxISupply = 1
       _f_right_id = 7
       _expiry = 1609459190
       // approves
-      await nft.approve(dao.address, 7, {from: owner})
+      await nft.approve(dao.address, 8, {from: owner})
       // Call freeze
       await dao.freeze(_baseAssetAddress, _baseAssetId, _endTime, [_maxISupply, 1, 1], {from: owner})
       // time travel to _expiry
