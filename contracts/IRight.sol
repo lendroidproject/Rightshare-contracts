@@ -57,6 +57,23 @@ contract IRight is Right {
     _meta.purpose = purpose;
   }
 
+  function _burn(address owner, uint256 tokenId) internal {
+    require(tokenId > 0, "invalid token id");
+    require(owner != address(0), "from address cannot be zero");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "IRT: token does not exist");
+    super._burn(owner, tokenId);
+    rights[owner][_meta.baseAssetAddress][_meta.baseAssetId].decrement();
+    delete metadata[tokenId];
+  }
+
+  function _transferFrom(address from, address to, uint256 tokenId) internal {
+    super._transferFrom(from, to, tokenId);
+    (address baseAssetAddress, uint256 baseAssetId) = baseAsset(tokenId);
+    rights[from][baseAssetAddress][baseAssetId].decrement();
+    rights[to][baseAssetAddress][baseAssetId].increment();
+  }
+
   /**
     * @notice Creates a new IRight Token
     * @dev Mints IRight Token, and updates metadata & currentTokenId
@@ -77,17 +94,6 @@ contract IRight is Right {
     mintTo(addresses[0]);
 
     _updateMetadata(values[3], values[0], now, values[1], addresses[1], values[2], category, "fun");
-  }
-
-
-  function _burn(address owner, uint256 tokenId) internal {
-    require(tokenId > 0, "invalid token id");
-    require(owner != address(0), "from address cannot be zero");
-    Metadata storage _meta = metadata[tokenId];
-    require(_meta.tokenId == tokenId, "IRT: token does not exist");
-    super._burn(owner, tokenId);
-    rights[owner][_meta.baseAssetAddress][_meta.baseAssetId].decrement();
-    delete metadata[tokenId];
   }
 
   /**
@@ -146,21 +152,6 @@ contract IRight is Right {
     require(_meta.tokenId == tokenId, "IRT: token does not exist");
     baseAssetAddress = _meta.baseAssetAddress;
     baseAssetId = _meta.baseAssetId;
-  }
-
-  function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {
-    require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
-    (address baseAssetAddress, uint256 baseAssetId) = baseAsset(tokenId);
-    rights[from][baseAssetAddress][baseAssetId].decrement();
-    rights[to][baseAssetAddress][baseAssetId].increment();
-    _safeTransferFrom(from, to, tokenId, _data);
-  }
-
-  function _transferFrom(address from, address to, uint256 tokenId) internal {
-    super._transferFrom(from, to, tokenId);
-    (address baseAssetAddress, uint256 baseAssetId) = baseAsset(tokenId);
-    rights[from][baseAssetAddress][baseAssetId].decrement();
-    rights[to][baseAssetAddress][baseAssetId].increment();
   }
 
   function hasRight(address who, address baseAssetAddress, uint256 baseAssetId) external view returns (bool) {

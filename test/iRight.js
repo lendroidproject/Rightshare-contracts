@@ -55,6 +55,8 @@ contract("IRight", (accounts) => {
       _maxISupply = 1
       // Confirm IRight currentTokenId is 0
       assert.equal(await iRight.currentTokenId(), 0, "currentTokenId is not 0.")
+      // Confirm rights counter is 0
+      assert.equal(await iRight.hasRight(_to, _baseAssetAddress, _baseAssetId), false, "hasRight() should return false.")
       // Call issue
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
@@ -80,6 +82,29 @@ contract("IRight", (accounts) => {
       assert.equal(result[0], _baseAssetAddress, "_baseAssetAddress cannot be 0x0.")
       // Confirm baseAsset id
       assert.equal(result[1], _baseAssetId, "_baseAssetId cannot be 0.")
+    })
+
+    it('updates rights counter', async () => {
+      // Confirm counter has been incremented
+      assert.equal(await iRight.hasRight(_to, _baseAssetAddress, _baseAssetId), true, "hasRight() should return true.")
+    })
+
+    it('transferFrom() updates rights counter', async () => {
+      // transfer iRight from accounts[1] to accounts[2]
+      await iRight.transferFrom(_to, accounts[2], 1, {from: _to})
+      // Confirm counter has been decremented
+      assert.equal(await iRight.hasRight(_to, _baseAssetAddress, _baseAssetId), false, "hasRight() should return false.")
+      // Confirm counter has been incremented
+      assert.equal(await iRight.hasRight(accounts[2], _baseAssetAddress, _baseAssetId), true, "hasRight() should return true.")
+    })
+
+    it('safeTransferFrom() updates rights counter', async () => {
+      // transfer iRight from accounts[1] to accounts[2]
+      await iRight.safeTransferFrom(accounts[2], _to, 1, {from: accounts[2]})
+      // Confirm counter has been decremented
+      assert.equal(await iRight.hasRight(accounts[2], _baseAssetAddress, _baseAssetId), false, "hasRight() should return false.")
+      // Confirm counter has been incremented
+      assert.equal(await iRight.hasRight(_to, _baseAssetAddress, _baseAssetId), true, "hasRight() should return true.")
     })
   })
 
@@ -183,7 +208,6 @@ contract("IRight", (accounts) => {
         'invalid version',
       )
     })
-
   })
 
   describe('revoke', () => {
@@ -228,7 +252,6 @@ contract("IRight", (accounts) => {
         'IRT: token does not exist',
       )
     })
-
   })
 
   describe('function calls with incorrect tokenId', () => {
@@ -322,7 +345,6 @@ contract("IRight", (accounts) => {
       // Confirm IRight tokenURI is correct
       assert.equal(tokenURI.toString(), `${API_BASE_URL}i/${_baseAssetAddress.toLowerCase()}/4/1609459200/2/1`, "tokenURI is incorrect.")
     })
-
   })
 
 });
