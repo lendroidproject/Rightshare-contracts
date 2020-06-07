@@ -6,9 +6,12 @@ import "./Right.sol";
 /** @title IRight
   * @author Lendroid Foundation
   * @notice A smart contract for Interim Rights
-  * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
+  * @dev Audit certificate : pending
   */
 contract IRight is Right {
+
+  enum Category { NONEXCLUSIVE, EXCLUSIVE, FUN }
+
   // This stores metadata about a IRight token
   struct Metadata {
     uint256 version; // version of the IRight
@@ -18,7 +21,8 @@ contract IRight is Right {
     uint256 endTime; // timestamp until when the IRight is deemed useful
     address baseAssetAddress; // address of original NFT locked in the DAO
     uint256 baseAssetId; // id of original NFT locked in the DAO
-    bool isExclusive; // indicates if the IRight is exclusive, aka, is the only IRight for the FRight
+    Category category; // category of IRight
+    string purpose; // purpose for which the IRight can be used
   }
 
   // stores a `Metadata` struct for each IRight.
@@ -37,9 +41,10 @@ contract IRight is Right {
     * @param endTime : uint256 expiry timestamp of the IRight
     * @param baseAssetAddress : address of original NFT
     * @param baseAssetId : id of original NFT
-    * @param isExclusive : bool indicating exclusivity of IRight
+    * @param category : category of IRight
+    * @param purpose : purpose of IRight
     */
-  function _updateMetadata(uint256 version, uint256 parentId, uint256 startTime, uint256 endTime, address baseAssetAddress, uint256 baseAssetId, bool isExclusive) private  {
+  function _updateMetadata(uint256 version, uint256 parentId, uint256 startTime, uint256 endTime, address baseAssetAddress, uint256 baseAssetId, Category category, string memory purpose) private  {
     Metadata storage _meta = metadata[currentTokenId()];
     _meta.tokenId = currentTokenId();
     _meta.version = version;
@@ -48,7 +53,8 @@ contract IRight is Right {
     _meta.endTime = endTime;
     _meta.baseAssetAddress = baseAssetAddress;
     _meta.baseAssetId = baseAssetId;
-    _meta.isExclusive = isExclusive;
+    _meta.category = category;
+    _meta.purpose = purpose;
   }
 
   /**
@@ -60,14 +66,19 @@ contract IRight is Right {
     */
   function issue(address[2] calldata addresses, bool isExclusive, uint256[4] calldata values) external onlyOwner {
     require(addresses[1].isContract(), "invalid base asset address");
-    require(values[0] > 0, "invalid parent id");
     require(values[1] > block.timestamp, "invalid expiry");
     require(values[2] > 0, "invalid base asset id");
     require(values[3] > 0, "invalid version");
+    Category category = Category.FUN;
+    if (values[0] > 0) {
+      category = isExclusive ? Category.EXCLUSIVE : Category.NONEXCLUSIVE;
+    }
     rights[addresses[0]][addresses[1]][values[2]].increment();
     mintTo(addresses[0]);
-    _updateMetadata(values[3], values[0], now, values[1], addresses[1], values[2], isExclusive);
+
+    _updateMetadata(values[3], values[0], now, values[1], addresses[1], values[2], category, "fun");
   }
+
 
   function _burn(address owner, uint256 tokenId) internal {
     require(tokenId > 0, "invalid token id");
@@ -102,7 +113,7 @@ contract IRight is Right {
     string memory _metadataUri = Strings.strConcat(
         Strings.strConcat("i/", Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
         Strings.strConcat(Strings.uint2str(_meta.endTime), "/"),
-        Strings.strConcat(Strings.bool2str(_meta.isExclusive), "/"),
+        Strings.strConcat(Strings.uint2str(uint(_meta.category)), "/"),
         Strings.uint2str(_meta.version)
     );
     return Strings.strConcat(

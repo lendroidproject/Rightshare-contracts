@@ -186,6 +186,27 @@ contract RightsDao is Ownable, IERC721Receiver {
     FRight(contracts[CONTRACT_TYPE_RIGHT_F]).incrementCirculatingISupply(values[0], 1);
   }
 
+
+  /**
+    * @notice Issues a Fun Access Token for a given NFT
+    * @dev Check if msg.sender is NFT owner, mint FAT to msg.sender
+    * @param baseAssetAddress : address of the NFT
+    * @param baseAssetId : id of the NFT
+    * @param expiry : timestamp until which the NFT is locked in the dao
+    * @param values : uint256 array [f_version, i_version]
+    */
+  function issueFAT(address baseAssetAddress, uint256 baseAssetId, uint256 expiry, uint256[2] calldata values) external {
+    if (whitelistedFreezeActivated) {
+      require(isWhitelisted[msg.sender], "sender is not whitelisted");
+    }
+    require(expiry > block.timestamp, "expiry should be in the future");
+    require((values[0] > 0) && (values[0] <= currentFVersion), "invalid f version");
+    require((values[1] > 0) && (values[1] <= currentIVersion), "invalid i version");
+    require(msg.sender == ERC721(baseAssetAddress).ownerOf(baseAssetId));
+    IRight(contracts[CONTRACT_TYPE_RIGHT_I]).issue([msg.sender, baseAssetAddress], false, [0, expiry, baseAssetId, values[1]]);
+  }
+
+
   /**
     * @notice Revokes a given IRight. The IRight can be revoked at any time.
     * @dev Burn the IRight token. If the corresponding FRight exists, decrement its circulatingISupply by 1

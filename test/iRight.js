@@ -41,7 +41,7 @@ contract("IRight", (accounts) => {
   })
 
   describe('issue : all rights', () => {
-    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber
+    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -53,7 +53,6 @@ contract("IRight", (accounts) => {
       _baseAssetId = 1
       _isExclusive = true
       _maxISupply = 1
-      _serialNumber = 1
       // Confirm IRight currentTokenId is 0
       assert.equal(await iRight.currentTokenId(), 0, "currentTokenId is not 0.")
       // Call issue
@@ -85,7 +84,7 @@ contract("IRight", (accounts) => {
   })
 
   describe('issue : exclusive rights', () => {
-    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber
+    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -97,7 +96,6 @@ contract("IRight", (accounts) => {
       _baseAssetId = 2
       _isExclusive = true
       _maxISupply = 1
-      _serialNumber = 1
       // Call issue
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
@@ -110,7 +108,7 @@ contract("IRight", (accounts) => {
   })
 
   describe('issue : non exclusive rights', () => {
-    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber
+    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -122,7 +120,6 @@ contract("IRight", (accounts) => {
       _baseAssetId = 3
       _isExclusive = false
       _maxISupply = 3
-      _serialNumber = 2
       // Call issure
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
@@ -163,14 +160,6 @@ contract("IRight", (accounts) => {
       )
     })
 
-    it('should fail if _parentId is 0', async () => {
-      // Call issue fails if _parentId is 0
-      await expectRevert(
-        iRight.issue([_to, _baseAssetAddress], true, [0, _endTime, _baseAssetId, 1], {from: owner}),
-        'invalid parent id',
-      )
-    })
-
     it('should fail if _endTime is invalid', async () => {
       // Call issue fails if version is 0
       await expectRevert(
@@ -198,7 +187,7 @@ contract("IRight", (accounts) => {
   })
 
   describe('revoke', () => {
-    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber
+    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -210,7 +199,6 @@ contract("IRight", (accounts) => {
       _baseAssetId = 4
       _isExclusive = true
       _maxISupply = 1
-      _serialNumber = 1
       // Call issue
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
@@ -244,7 +232,7 @@ contract("IRight", (accounts) => {
   })
 
   describe('function calls with incorrect tokenId', () => {
-    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply, _serialNumber
+    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
 
     before(async () => {
       // Mint NFT to owner
@@ -256,7 +244,6 @@ contract("IRight", (accounts) => {
       _baseAssetId = 5
       _isExclusive = true
       _maxISupply = 1
-      _serialNumber = 1
       // Call issue
       await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
     })
@@ -310,6 +297,30 @@ contract("IRight", (accounts) => {
         iRight.baseAsset(8),
         'IRT: token does not exist',
       )
+    })
+  })
+
+  describe('issue : unencumbered rights', () => {
+    let _to, _parentId, _endTime, _baseAssetAddress, _baseAssetId, _isExclusive, _maxISupply
+
+    before(async () => {
+      // Mint NFT to owner
+      await nft.mintTo(owner);
+      _to = accounts[1]
+      _parentId = 0
+      _endTime = 1609459200
+      _baseAssetAddress = web3.utils.toChecksumAddress(nft.address)
+      _baseAssetId = 4
+      _isExclusive = true
+      _maxISupply = 1
+      // Call issue
+      await iRight.issue([_to, _baseAssetAddress], _isExclusive, [_parentId, _endTime, _baseAssetId, 1], {from: owner})
+    })
+
+    it('updates the tokenURI', async () => {
+      const tokenURI = await iRight.tokenURI(6)
+      // Confirm IRight tokenURI is correct
+      assert.equal(tokenURI.toString(), `${API_BASE_URL}i/${_baseAssetAddress.toLowerCase()}/4/1609459200/2/1`, "tokenURI is incorrect.")
     })
 
   })
