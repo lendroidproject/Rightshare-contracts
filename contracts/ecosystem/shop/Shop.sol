@@ -7,11 +7,7 @@ import "./IShop.sol";
  * @title Shop
  * @dev Implements REC Shop.sol
  */
-<<<<<<< HEAD
-contract Shop is Ownable, ERC721Holder {
-=======
-contract Shop is Ownable, IERC721Receiver, IShop {
->>>>>>> 9bd0e88e14a9e3db566d052ccaab3732772edce1
+contract Shop is Ownable, ERC721Holder, IShop {
 
     using Address for address;
     using SafeMath for uint256;
@@ -47,7 +43,7 @@ contract Shop is Ownable, IERC721Receiver, IShop {
         return keccak256(abi.encodePacked(baseAssetAddress, baseAssetId));
     }
 
-    function list(address baseAssetAddress, uint256 baseAssetId, address fRightAddress, uint256 fRightId, uint256 maxSupply) external {
+    function list(address baseAssetAddress, uint256 baseAssetId, address fRightAddress, uint256 fRightId, uint256 maxSupply) external override {
         bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
         require(hashToId[_hash] == 0, "Id with hash already exists");
         lastId = lastId.add(1);
@@ -69,7 +65,7 @@ contract Shop is Ownable, IERC721Receiver, IShop {
         FRight(fRightAddress).safeTransferFrom(msg.sender, address(this), fRightId);
     }
 
-    function delist(address baseAssetAddress, uint256 baseAssetId) external {
+    function delist(address baseAssetAddress, uint256 baseAssetId) external override {
         bytes32 hashToDelist = computeHash(baseAssetAddress, baseAssetId);
         uint256 idToDelist = hashToId[hashToDelist];
         require(idToDelist > 0, "Id with hash does not exist");
@@ -100,7 +96,7 @@ contract Shop is Ownable, IERC721Receiver, IShop {
          items[_hash].isActive = isActive;
     }
 
-    function isBuyable(address baseAssetAddress, uint256 baseAssetId) public view returns(bool) {
+    function isBuyable(address baseAssetAddress, uint256 baseAssetId) public view override returns(bool) {
          bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
          require(items[_hash].hash == _hash, "item does not exist");
          if (!items[_hash].isActive) {
@@ -112,7 +108,7 @@ contract Shop is Ownable, IERC721Receiver, IShop {
         return true;
     }
 
-    function buy(address baseAssetAddress, uint256 baseAssetId, address daoAddress, uint256 iVersion, uint256 expiry) payable external {
+    function buy(address baseAssetAddress, uint256 baseAssetId, address daoAddress, uint256 iVersion, uint256 expiry) payable external override {
          bytes32 _hash = computeHash(baseAssetAddress, baseAssetId);
          require(items[_hash].hash == _hash, "item does not exist");
          // update item

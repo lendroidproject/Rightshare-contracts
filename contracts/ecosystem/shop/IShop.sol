@@ -1,4 +1,5 @@
-pragma solidity 0.5.11;
+// SPDX-License-Identifier: https://github.com/lendroidproject/Rightshare-contracts/blob/master/LICENSE.md
+pragma solidity 0.6.10;
 
 /**
  * @title Shop
@@ -6,7 +7,7 @@ pragma solidity 0.5.11;
  */
 
 interface IShop {
-  
+
   function list(address baseAssetAddress, uint256 baseAssetId, address fRightAddress, uint256 fRightId, uint256 maxSupply) external;
 
   function delist(address baseAssetAddress, uint256 baseAssetId) external;
