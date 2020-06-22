@@ -1,19 +1,19 @@
 {
   "name": "rightshare-contracts",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "smart contracts for nft rightshare",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "truffle": "5.1.21",
-    "openzeppelin-solidity": "2.5.0",
-    "solc": "0.6.4",
+    "truffle": "5.1.31",
+    "openzeppelin-solidity": "3.0.2",
+    "solc": "0.6.10",
     "ganache-cli": "6.9.1"
   },
   "devDependencies": {
-    "solidity-coverage": "0.7.2",
+    "solidity-coverage": "0.7.7",
     "@openzeppelin/test-helpers": "0.5.5"
   },
   "scripts": {

@@ -1,10 +1,11 @@
-pragma solidity 0.5.11;
+// SPDX-License-Identifier: https://github.com/lendroidproject/Rightshare-contracts/blob/master/LICENSE.md
+pragma solidity 0.6.10;
 
-import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
+import 'openzeppelin-solidity/contracts/access/Ownable.sol';
 import 'openzeppelin-solidity/contracts/utils/Address.sol';
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
-import 'openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol';
+import 'openzeppelin-solidity/contracts/token/ERC721/ERC721Holder.sol';
 
 import "./FRight.sol";
 import "./IRight.sol";
@@ -15,7 +16,7 @@ import "./IRight.sol";
  * @notice DAO that handles NFTs, FRights, and IRights
  * @dev Audit certificate : https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf
  */
-contract RightsDao is Ownable, IERC721Receiver {
+contract RightsDao is Ownable, ERC721Holder {
 
   using Address for address;
   using SafeMath for uint256;
@@ -42,10 +43,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     require(iRightContractAddress.isContract(), "invalid iRightContractAddress");
     contracts[CONTRACT_TYPE_RIGHT_F] = fRightContractAddress;
     contracts[CONTRACT_TYPE_RIGHT_I] = iRightContractAddress;
-  }
-
-  function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
-    return this.onERC721Received.selector;
   }
 
   /**
@@ -118,22 +115,6 @@ contract RightsDao is Ownable, IERC721Receiver {
     }
     else {
       IRight(contracts[rightType]).setApiBaseUrl(url);
-    }
-  }
-
-  /**
-    * @notice Allows owner to set the proxy registry address of F or I Right token
-    * @dev Set proxy registry address of the Right Token
-    * @param rightType type of Right contract
-    * @param proxyRegistryAddress address of the Right's Proxy Registry
-    */
-  function setRightProxyRegistry(int128 rightType, address proxyRegistryAddress) external onlyOwner {
-    require((rightType == CONTRACT_TYPE_RIGHT_F) || (rightType == CONTRACT_TYPE_RIGHT_I), "invalid contract type");
-    if (rightType == CONTRACT_TYPE_RIGHT_F) {
-      FRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
-    }
-    else {
-      IRight(contracts[rightType]).setProxyRegistryAddress(proxyRegistryAddress);
     }
   }
 

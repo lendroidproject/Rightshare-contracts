@@ -1,4 +1,5 @@
-pragma solidity 0.5.11;
+// SPDX-License-Identifier: https://github.com/lendroidproject/Rightshare-contracts/blob/master/LICENSE.md
+pragma solidity 0.6.10;
 
 import "../../RightsDao.sol";
 
@@ -6,7 +7,7 @@ import "../../RightsDao.sol";
  * @title Shop
  * @dev Implements REC Shop.sol
  */
-contract Shop is Ownable, IERC721Receiver {
+contract Shop is Ownable, ERC721Holder {
 
     using Address for address;
     using SafeMath for uint256;
@@ -33,10 +34,6 @@ contract Shop is Ownable, IERC721Receiver {
     mapping(bytes32 => uint256) public hashToId;
 
     mapping(uint256 => bytes32) public idToHash;
-
-    function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
-      return this.onERC721Received.selector;
-    }
 
     constructor(address payable payoutAddress) public {
         payoutContractAddress = payoutAddress;

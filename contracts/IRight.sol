@@ -1,4 +1,5 @@
-pragma solidity 0.5.11;
+// SPDX-License-Identifier: https://github.com/lendroidproject/Rightshare-contracts/blob/master/LICENSE.md
+pragma solidity 0.6.10;
 
 import "./Right.sol";
 
@@ -24,7 +25,7 @@ contract IRight is Right {
   // stores a `Metadata` struct for each IRight.
   mapping(uint256 => Metadata) public metadata;
 
-  constructor() TradeableERC721Token("IRight Token", "IRT", address(0)) public {}
+  constructor() ERC721("IRight Token", "IRT") public {}
 
   /**
     * @notice Adds metadata about a IRight Token
@@ -74,32 +75,29 @@ contract IRight is Right {
   function revoke(address from, uint256 tokenId) external onlyOwner {
     require(tokenId > 0, "invalid token id");
     require(from != address(0), "from address cannot be zero");
+    require(from == ownerOf(tokenId), "from address is not owner of tokenId");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "IRT: token does not exist");
     delete metadata[tokenId];
-    _burn(from, tokenId);
+    _burn(tokenId);
   }
 
   /**
-    * @notice Displays the api uri of a IRight token
-    * @dev Reconstructs the uri from the FRight metadata
+    * @notice Updates the api uri of a IRight token
+    * @dev Reconstructs and saves the uri from the FRight metadata
     * @param tokenId : uint256 representing the IRight id
-    * @return string : api uri
     */
-  function tokenURI(uint256 tokenId) external view returns (string memory) {
+  function _updateTokenURI(uint256 tokenId) private {
     require(tokenId > 0, "invalid token id");
     Metadata storage _meta = metadata[tokenId];
     require(_meta.tokenId == tokenId, "IRT: token does not exist");
-    string memory _metadataUri = Strings.strConcat(
-        Strings.strConcat("i/", Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
-        Strings.strConcat(Strings.uint2str(_meta.endTime), "/"),
-        Strings.strConcat(Strings.bool2str(_meta.isExclusive), "/"),
-        Strings.uint2str(_meta.version)
+    string memory _tokenURI = ExtendedStrings.strConcat(
+        ExtendedStrings.strConcat("i/", ExtendedStrings.address2str(_meta.baseAssetAddress), "/", ExtendedStrings.uint2str(_meta.baseAssetId), "/"),
+        ExtendedStrings.strConcat(ExtendedStrings.uint2str(_meta.endTime), "/"),
+        ExtendedStrings.strConcat(ExtendedStrings.bool2str(_meta.isExclusive), "/"),
+        ExtendedStrings.uint2str(_meta.version)
     );
-    return Strings.strConcat(
-        baseTokenURI(),
-        _metadataUri
-    );
+    _setTokenURI(tokenId, _tokenURI);
   }
 
   /**

@@ -1,4 +1,5 @@
-pragma solidity 0.5.11;
+// SPDX-License-Identifier: https://github.com/lendroidproject/Rightshare-contracts/blob/master/LICENSE.md
+pragma solidity 0.6.10;
 
 import "./Right.sol";
 
@@ -27,7 +28,7 @@ contract FRight is Right {
   // stores information of original NFTs
   mapping(address => mapping(uint256 => bool)) public isFrozen;
 
-  constructor() TradeableERC721Token("FRight Token", "FRT", address(0)) public {}
+  constructor() ERC721("FRight Token", "FRT") public {}
 
   /**
     * @notice Adds metadata about a FRight Token
@@ -50,6 +51,25 @@ contract FRight is Right {
     _meta.isExclusive = maxISupply == 1;
     _meta.maxISupply = maxISupply;
     _meta.circulatingISupply = circulatingISupply;
+  }
+
+  /**
+    * @notice Updates the api uri of a FRight token
+    * @dev Reconstructs and saves the uri from the FRight metadata
+    * @param tokenId : uint256 representing the FRight id
+    */
+  function _updateTokenURI(uint256 tokenId) private {
+    require(tokenId > 0, "invalid token id");
+    Metadata storage _meta = metadata[tokenId];
+    require(_meta.tokenId == tokenId, "FRT: token does not exist");
+    string memory _tokenURI = ExtendedStrings.strConcat(
+        ExtendedStrings.strConcat(ExtendedStrings.address2str(_meta.baseAssetAddress), "/", ExtendedStrings.uint2str(_meta.baseAssetId), "/"),
+        ExtendedStrings.strConcat("f/", ExtendedStrings.uint2str(_meta.endTime), "/"),
+        ExtendedStrings.strConcat(ExtendedStrings.bool2str(_meta.isExclusive), "/", ExtendedStrings.uint2str(_meta.maxISupply), "/"),
+        ExtendedStrings.strConcat(ExtendedStrings.uint2str(_meta.circulatingISupply) , "/"),
+        ExtendedStrings.uint2str(_meta.version)
+    );
+    _setTokenURI(tokenId, _tokenURI);
   }
 
   /**
@@ -93,32 +113,10 @@ contract FRight is Right {
   function unfreeze(address from, uint256 tokenId) external onlyOwner {
     require(isUnfreezable(tokenId), "FRT: token is not unfreezable");
     require(from != address(0), "from address cannot be zero");
+    require(from == ownerOf(tokenId), "from address is not owner of tokenId");
     delete isFrozen[metadata[tokenId].baseAssetAddress][metadata[tokenId].baseAssetId];
     delete metadata[tokenId];
-    _burn(from, tokenId);
-  }
-
-  /**
-    * @notice Displays the api uri of a FRight token
-    * @dev Reconstructs the uri from the FRight metadata
-    * @param tokenId : uint256 representing the FRight id
-    * @return string : api uri
-    */
-  function tokenURI(uint256 tokenId) external view returns (string memory) {
-    require(tokenId > 0, "invalid token id");
-    Metadata storage _meta = metadata[tokenId];
-    require(_meta.tokenId == tokenId, "FRT: token does not exist");
-    string memory _metadataUri = Strings.strConcat(
-        Strings.strConcat(Strings.address2str(_meta.baseAssetAddress), "/", Strings.uint2str(_meta.baseAssetId), "/"),
-        Strings.strConcat("f/", Strings.uint2str(_meta.endTime), "/"),
-        Strings.strConcat(Strings.bool2str(_meta.isExclusive), "/", Strings.uint2str(_meta.maxISupply), "/"),
-        Strings.strConcat(Strings.uint2str(_meta.circulatingISupply) , "/"),
-        Strings.uint2str(_meta.version)
-    );
-    return Strings.strConcat(
-        baseTokenURI(),
-        _metadataUri
-    );
+    _burn(tokenId);
   }
 
   /**
@@ -134,6 +132,7 @@ contract FRight is Right {
     require(_meta.tokenId == tokenId, "FRT: token does not exist");
     require(_meta.maxISupply.sub(_meta.circulatingISupply) >= amount, "Circulating I Supply cannot be incremented");
     _meta.circulatingISupply = _meta.circulatingISupply.add(amount);
+    _updateTokenURI(tokenId);
   }
 
   /**
@@ -150,6 +149,7 @@ contract FRight is Right {
     require(_meta.maxISupply.sub(amount) >= _meta.circulatingISupply.sub(amount), "invalid amount");
     _meta.circulatingISupply = _meta.circulatingISupply.sub(amount);
     _meta.maxISupply = _meta.maxISupply.sub(amount);
+    _updateTokenURI(tokenId);
   }
 
   /**
