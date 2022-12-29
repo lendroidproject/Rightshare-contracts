@@ -1,7 +1,7 @@
-# Rightshare-contracts
-Rightshare Smart Contracts. Refer https://rinkeby-rightshare.lendroid.com
+# Rightshare package
+The Rightshare package comprises the following tools. Please feel free to use them (in any combination) to deploy your own Rightshare ecosystem.
 
-## Framework
+## Smart contracts
 The architecture comprises 4 main smart contracts:
 
 1. Right.sol
@@ -11,9 +11,29 @@ The architecture comprises 4 main smart contracts:
 
 All the contracts in this repository have been written in Solidity v.5.11.
 
-Please use Git commits according to this article: https://chris.beams.io/posts/git-commit
+- [Github](https://github.com/lendroidproject/Rightshare-contracts)
+- [Audit report](https://github.com/lendroidproject/Rightshare-contracts/blob/master/audit-report.pdf)
+- [PoC](https://rinkeby-rightshare.lendroid.com)
 
-## Installation and setup
+## Javascript library
+Nodejs implementation for user interface to interact with the smart contracts.
+- [Github](https://github.com/lendroidproject/Rightshare-js)
+## UI template
+A base template of the user interface.
+- [Github](https://github.com/lendroidproject/Rightshare-ui)
+## Frontend server
+A server implementation on Google Cloud (Python)
+- [Github](https://github.com/lendroidproject/Rightshare-frontend)
+## Metadata server
+An API server implementation on Google Cloud (Python) to create an image based on on-chain metadata
+- [Github](https://github.com/lendroidproject/Rightshare-metadata)
+## Technical Documentation
+Technical Documentation on how to use the Javascript library and UI template
+- [Github](https://github.com/lendroidproject/Rightshare-documentation)
+
+## How to use this repo
+
+### Installation and setup
 * Clone this repository
 
   `git clone <repo>`
@@ -27,7 +47,7 @@ Please use Git commits according to this article: https://chris.beams.io/posts/g
   `npm install`
 
 
-## Test and development
+### Test and development
 
 * Open new terminal, run ganache
 
